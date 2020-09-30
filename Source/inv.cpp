@@ -472,7 +472,7 @@ BOOL CanBePlacedOnBelt(const ItemStruct &item)
 	return FitsInBeltSlot(item) && item._iStatFlag && AllItemsList[item.IDidx].iUsable;
 }
 
-BOOL AutoPlaceItemInBelt(int playerNumber, const ItemStruct &item)
+BOOL AutoPlaceItemInBelt(int playerNumber, const ItemStruct &item, BOOL persistItem = FALSE)
 {
 	if (!CanBePlacedOnBelt(item)) {
 		return FALSE;
@@ -480,6 +480,12 @@ BOOL AutoPlaceItemInBelt(int playerNumber, const ItemStruct &item)
 
 	for (int i = 0; i < MAXBELTITEMS; i++) {
 		if (plr[playerNumber].SpdList[i]._itype == ITYPE_NONE) {
+			if (persistItem) {
+				plr[playerNumber].SpdList[i] = item;
+				CalcPlrScrolls(playerNumber);
+				drawsbarflag = TRUE;
+			}
+
 			return TRUE;
 		}
 	}
@@ -1568,17 +1574,8 @@ void AutoGetItem(int pnum, int ii)
 			w = icursW28;
 			h = icursH28;
 			if (w == 1 && h == 1) {
-				idx = plr[pnum].HoldItem.IDidx;
-				if (plr[pnum].HoldItem._iStatFlag && AllItemsList[idx].iUsable) {
-					for (i = 0; i < MAXBELTITEMS && !done; i++) {
-						if (plr[pnum].SpdList[i]._itype == ITYPE_NONE) {
-							plr[pnum].SpdList[i] = plr[pnum].HoldItem;
-							CalcPlrScrolls(pnum);
-							drawsbarflag = TRUE;
-							done = TRUE;
-						}
-					}
-				}
+				done = AutoPlaceItemInBelt(pnum, plr[pnum].HoldItem, TRUE);
+
 				for (i = 30; i <= 39 && !done; i++) {
 					done = AutoPlace(pnum, i, w, h, TRUE);
 				}
