@@ -450,6 +450,43 @@ void DrawInvBelt()
 	}
 }
 
+InvXY GetInventorySize(const ItemStruct &item)
+{
+	int itemSizeIndex = item._iCurs + CURSOR_FIRSTITEM;
+
+	return {
+		InvItemWidth[itemSizeIndex] / INV_SLOT_SIZE_PX,
+		InvItemHeight[itemSizeIndex] / INV_SLOT_SIZE_PX,
+	};
+}
+
+BOOL FitsInBeltSlot(const ItemStruct &item)
+{
+	InvXY size = GetInventorySize(item);
+
+	return size.X == 1 && size.Y == 1;
+}
+
+BOOL CanBePlacedOnBelt(const ItemStruct &item)
+{
+	return FitsInBeltSlot(item) && item._iStatFlag && AllItemsList[item.IDidx].iUsable;
+}
+
+BOOL AutoPlaceItemInBelt(int playerNumber, const ItemStruct &item)
+{
+	if (!CanBePlacedOnBelt(item)) {
+		return FALSE;
+	}
+
+	for (int i = 0; i < MAXBELTITEMS; i++) {
+		if (plr[playerNumber].SpdList[i]._itype == ITYPE_NONE) {
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
 BOOL AutoPlace(int pnum, int ii, int sx, int sy, BOOL saveflag)
 {
 	int i, j, xx, yy;
@@ -505,7 +542,7 @@ BOOL AutoPlace(int pnum, int ii, int sx, int sy, BOOL saveflag)
 	return done;
 }
 
-BOOL SpecialAutoPlace(int pnum, int ii, int sx, int sy)
+BOOL SpecialAutoPlace(int pnum, int ii, const ItemStruct &item)
 {
 	int i, j, xx, yy;
 	BOOL done;
@@ -515,7 +552,9 @@ BOOL SpecialAutoPlace(int pnum, int ii, int sx, int sy)
 	if (yy < 0) {
 		yy = 0;
 	}
-	for (j = 0; j < sy && done; j++) {
+
+	InvXY itemSize = GetInventorySize(item); 
+	for (j = 0; j < itemSize.Y && done; j++) {
 		if (yy >= 40) {
 			done = FALSE;
 		}
@@ -523,7 +562,7 @@ BOOL SpecialAutoPlace(int pnum, int ii, int sx, int sy)
 		if (xx < 0) {
 			xx = 0;
 		}
-		for (i = 0; i < sx && done; i++) {
+		for (i = 0; i < itemSize.X && done; i++) {
 			if (xx >= 10) {
 				done = FALSE;
 			} else {
@@ -534,18 +573,9 @@ BOOL SpecialAutoPlace(int pnum, int ii, int sx, int sy)
 		yy += 10;
 	}
 	if (!done) {
-		if (sx > 1 || sy > 1) {
-			done = FALSE;
-		} else {
-			for (i = 0; i < MAXBELTITEMS; i++) {
-				if (plr[pnum].SpdList[i]._itype == ITYPE_NONE) {
-					done = TRUE;
-					break;
-				}
-			}
-		}
+		done = AutoPlaceItemInBelt(pnum, item);
 	}
-	
+
 	return done;
 }
 

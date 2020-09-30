@@ -2203,7 +2203,7 @@ void S_WBuyEnter()
 			done = FALSE;
 
 			for (i = 0; i < 40 && !done; i++) {
-				done = SpecialAutoPlace(myplr, i, cursW / 28, cursH / 28);
+				done = SpecialAutoPlace(myplr, i, plr[myplr].HoldItem);
 			}
 
 			if (done)
@@ -2501,7 +2501,7 @@ void S_HBuyEnter()
 			done = FALSE;
 			i = 0;
 			for (i = 0; i < 40 && !done; i++) {
-				done = SpecialAutoPlace(myplr, i, cursW / 28, cursH / 28);
+				done = SpecialAutoPlace(myplr, i, plr[myplr].HoldItem);
 			}
 			if (done)
 				StartStore(STORE_CONFIRM);
