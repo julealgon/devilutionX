@@ -493,6 +493,80 @@ BOOL AutoPlaceItemInBelt(int playerNumber, const ItemStruct &item, BOOL persistI
 	return FALSE;
 }
 
+BOOL AutoPlaceItemInInventory(int playerNumber, const ItemStruct &item, BOOL persistItem = FALSE)
+{
+	InvXY itemSize = GetInventorySize(item);
+	BOOL done = FALSE;
+
+	if (itemSize.X == 1 && itemSize.Y == 1) {
+		for (int i = 30; i <= 39 && !done; i++) {
+			done = AutoPlace(playerNumber, i, itemSize.X, itemSize.Y, persistItem);
+		}
+
+		for (int i = 20; i <= 29 && !done; i++) {
+			done = AutoPlace(playerNumber, i, itemSize.X, itemSize.Y, persistItem);
+		}
+
+		for (int i = 10; i <= 19 && !done; i++) {
+			done = AutoPlace(playerNumber, i, itemSize.X, itemSize.Y, persistItem);
+		}
+
+		for (int i = 0; i <= 9 && !done; i++) {
+			done = AutoPlace(playerNumber, i, itemSize.X, itemSize.Y, persistItem);
+		}
+	}
+
+	if (itemSize.X == 1 && itemSize.Y == 2) {
+		for (int i = 29; i >= 20 && !done; i--) {
+			done = AutoPlace(playerNumber, i, itemSize.X, itemSize.Y, persistItem);
+		}
+
+		for (int i = 9; i >= 0 && !done; i--) {
+			done = AutoPlace(playerNumber, i, itemSize.X, itemSize.Y, persistItem);
+		}
+
+		for (int i = 19; i >= 10 && !done; i--) {
+			done = AutoPlace(playerNumber, i, itemSize.X, itemSize.Y, persistItem);
+		}
+	}
+
+	if (itemSize.X == 1 && itemSize.Y == 3) {
+		for (int i = 0; i < 20 && !done; i++) {
+			done = AutoPlace(playerNumber, i, itemSize.X, itemSize.Y, persistItem);
+		}
+	}
+
+	if (itemSize.X == 2 && itemSize.Y == 2) {
+		for (int i = 0; i < 10 && !done; i++) {
+			done = AutoPlace(playerNumber, AP2x2Tbl[i], itemSize.X, itemSize.Y, persistItem);
+		}
+
+		for (int i = 21; i < 29 && !done; i += 2) {
+			done = AutoPlace(playerNumber, i, itemSize.X, itemSize.Y, persistItem);
+		}
+
+		for (int i = 1; i < 9 && !done; i += 2) {
+			done = AutoPlace(playerNumber, i, itemSize.X, itemSize.Y, persistItem);
+		}
+
+		for (int i = 10; i < 19 && !done; i++) {
+			done = AutoPlace(playerNumber, i, itemSize.X, itemSize.Y, persistItem);
+		}
+	}
+
+	if (itemSize.X == 2 && itemSize.Y == 3) {
+		for (int i = 0; i < 9 && !done; i++) {
+			done = AutoPlace(playerNumber, i, itemSize.X, itemSize.Y, persistItem);
+		}
+
+		for (int i = 10; i < 19 && !done; i++) {
+			done = AutoPlace(playerNumber, i, itemSize.X, itemSize.Y, persistItem);
+		}
+	}
+
+	return done;
+}
+
 BOOL AutoPlace(int pnum, int ii, int sx, int sy, BOOL saveflag)
 {
 	int i, j, xx, yy;
@@ -1571,62 +1645,10 @@ void AutoGetItem(int pnum, int ii)
 			}
 		}
 		if (!done) {
-			w = icursW28;
-			h = icursH28;
-			if (w == 1 && h == 1) {
-				done = AutoPlaceItemInBelt(pnum, plr[pnum].HoldItem, TRUE);
-
-				for (i = 30; i <= 39 && !done; i++) {
-					done = AutoPlace(pnum, i, w, h, TRUE);
-				}
-				for (i = 20; i <= 29 && !done; i++) {
-					done = AutoPlace(pnum, i, w, h, TRUE);
-				}
-				for (i = 10; i <= 19 && !done; i++) {
-					done = AutoPlace(pnum, i, w, h, TRUE);
-				}
-				for (i = 0; i <= 9 && !done; i++) {
-					done = AutoPlace(pnum, i, w, h, TRUE);
-				}
-			}
-			if (w == 1 && h == 2) {
-				for (i = 29; i >= 20 && !done; i--) {
-					done = AutoPlace(pnum, i, w, h, TRUE);
-				}
-				for (i = 9; i >= 0 && !done; i--) {
-					done = AutoPlace(pnum, i, w, h, TRUE);
-				}
-				for (i = 19; i >= 10 && !done; i--) {
-					done = AutoPlace(pnum, i, w, h, TRUE);
-				}
-			}
-			if (w == 1 && h == 3) {
-				for (i = 0; i < 20 && !done; i++) {
-					done = AutoPlace(pnum, i, w, h, TRUE);
-				}
-			}
-			if (w == 2 && h == 2) {
-				for (i = 0; i < 10 && !done; i++) {
-					done = AutoPlace(pnum, AP2x2Tbl[i], w, h, TRUE);
-				}
-				for (i = 21; i < 29 && !done; i += 2) {
-					done = AutoPlace(pnum, i, w, h, TRUE);
-				}
-				for (i = 1; i < 9 && !done; i += 2) {
-					done = AutoPlace(pnum, i, w, h, TRUE);
-				}
-				for (i = 10; i < 19 && !done; i++) {
-					done = AutoPlace(pnum, i, w, h, TRUE);
-				}
-			}
-			if (w == 2 && h == 3) {
-				for (i = 0; i < 9 && !done; i++) {
-					done = AutoPlace(pnum, i, w, h, TRUE);
-				}
-				for (i = 10; i < 19 && !done; i++) {
-					done = AutoPlace(pnum, i, w, h, TRUE);
-				}
-			}
+			done = AutoPlaceItemInBelt(pnum, plr[pnum].HoldItem, TRUE);
+		}
+		if (!done) {
+			done = AutoPlaceItemInInventory(pnum, plr[pnum].HoldItem, TRUE);
 		}
 	}
 	if (done) {
