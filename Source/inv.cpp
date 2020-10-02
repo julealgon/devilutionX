@@ -469,7 +469,7 @@ BOOL FitsInBeltSlot(const ItemStruct &item)
 
 BOOL CanBePlacedOnBelt(const ItemStruct &item)
 {
-	return FitsInBeltSlot(item) && item._iStatFlag && AllItemsList[item.IDidx].iUsable;
+	return FitsInBeltSlot(item) && item._itype != ITYPE_GOLD && item._iStatFlag && AllItemsList[item.IDidx].iUsable;
 }
 
 BOOL AutoPlaceItemInBelt(int playerNumber, const ItemStruct &item, BOOL persistItem = FALSE)
