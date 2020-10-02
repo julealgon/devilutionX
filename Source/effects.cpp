@@ -1043,9 +1043,12 @@ BOOL calc_snd_position(int x, int y, int *plVolume, int *plPan)
 	return TRUE;
 }
 
-void PlaySFX(int psfx)
+void PlaySFX(int psfx, BOOL randomizeByCategory)
 {
-	psfx = RndSFX(psfx);
+	if (randomizeByCategory) {
+		psfx = RndSFX(psfx);
+	}
+
 	PlaySFX_priv(&sgSFX[psfx], FALSE, 0, 0);
 }
 

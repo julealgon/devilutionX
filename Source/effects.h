@@ -23,7 +23,7 @@ void InitMonsterSND(int monst);
 void FreeMonsterSnd();
 void PlayEffect(int i, int mode);
 BOOL calc_snd_position(int x, int y, int *plVolume, int *plPan);
-void PlaySFX(int psfx);
+void PlaySFX(int psfx, BOOL randomizeByCategory = TRUE);
 void PlaySFX_priv(TSFX *pSFX, BOOL loc, int x, int y);
 void stream_play(TSFX *pSFX, int lVolume, int lPan);
 int RndSFX(int psfx);
