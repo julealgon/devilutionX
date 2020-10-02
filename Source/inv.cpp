@@ -1201,7 +1201,7 @@ void CheckInvSwap(int pnum, BYTE bLoc, int idx, WORD wCI, int seed, BOOL bId)
 	CalcPlrInv(pnum, TRUE);
 }
 
-void CheckInvCut(int pnum, int mx, int my)
+void CheckInvCut(int pnum, int mx, int my, BOOL moveToBelt)
 {
 	int r;
 	BOOL done;
@@ -1245,65 +1245,80 @@ void CheckInvCut(int pnum, int mx, int my)
 	plr[pnum].HoldItem._itype = ITYPE_NONE;
 
 	if (
-	    r >= SLOTXY_HEAD_FIRST
-	    && r <= SLOTXY_HEAD_LAST
-	    && plr[pnum].InvBody[INVLOC_HEAD]._itype != ITYPE_NONE) {
-		NetSendCmdDelItem(FALSE, INVLOC_HEAD);
+		r >= SLOTXY_HEAD_FIRST
+		&& r <= SLOTXY_HEAD_LAST
+		&& plr[pnum].InvBody[INVLOC_HEAD]._itype != ITYPE_NONE) {
 		plr[pnum].HoldItem = plr[pnum].InvBody[INVLOC_HEAD];
-		plr[pnum].InvBody[INVLOC_HEAD]._itype = ITYPE_NONE;
+		if (!moveToBelt) {
+			NetSendCmdDelItem(FALSE, INVLOC_HEAD);
+			plr[pnum].InvBody[INVLOC_HEAD]._itype = ITYPE_NONE;
+		}
 	}
 
 	if (
-	    r == SLOTXY_RING_LEFT
-	    && plr[pnum].InvBody[INVLOC_RING_LEFT]._itype != ITYPE_NONE) {
-		NetSendCmdDelItem(FALSE, INVLOC_RING_LEFT);
+		r == SLOTXY_RING_LEFT
+		&& plr[pnum].InvBody[INVLOC_RING_LEFT]._itype != ITYPE_NONE) {
 		plr[pnum].HoldItem = plr[pnum].InvBody[INVLOC_RING_LEFT];
-		plr[pnum].InvBody[INVLOC_RING_LEFT]._itype = ITYPE_NONE;
+		if (!moveToBelt) {
+			NetSendCmdDelItem(FALSE, INVLOC_RING_LEFT);
+			plr[pnum].InvBody[INVLOC_RING_LEFT]._itype = ITYPE_NONE;
+		}
 	}
 
 	if (
-	    r == SLOTXY_RING_RIGHT
-	    && plr[pnum].InvBody[INVLOC_RING_RIGHT]._itype != ITYPE_NONE) {
-		NetSendCmdDelItem(FALSE, INVLOC_RING_RIGHT);
+		r == SLOTXY_RING_RIGHT
+		&& plr[pnum].InvBody[INVLOC_RING_RIGHT]._itype != ITYPE_NONE) {
 		plr[pnum].HoldItem = plr[pnum].InvBody[INVLOC_RING_RIGHT];
-		plr[pnum].InvBody[INVLOC_RING_RIGHT]._itype = ITYPE_NONE;
+		if (!moveToBelt) {
+			NetSendCmdDelItem(FALSE, INVLOC_RING_RIGHT);
+			plr[pnum].InvBody[INVLOC_RING_RIGHT]._itype = ITYPE_NONE;
+		}
 	}
 
 	if (
-	    r == SLOTXY_AMULET
-	    && plr[pnum].InvBody[INVLOC_AMULET]._itype != ITYPE_NONE) {
-		NetSendCmdDelItem(FALSE, INVLOC_AMULET);
+		r == SLOTXY_AMULET
+		&& plr[pnum].InvBody[INVLOC_AMULET]._itype != ITYPE_NONE) {
 		plr[pnum].HoldItem = plr[pnum].InvBody[INVLOC_AMULET];
-		plr[pnum].InvBody[INVLOC_AMULET]._itype = ITYPE_NONE;
+		if (!moveToBelt) {
+			NetSendCmdDelItem(FALSE, INVLOC_AMULET);
+			plr[pnum].InvBody[INVLOC_AMULET]._itype = ITYPE_NONE;
+		}
 	}
 
 	if (
-	    r >= SLOTXY_HAND_LEFT_FIRST
-	    && r <= SLOTXY_HAND_LEFT_LAST
-	    && plr[pnum].InvBody[INVLOC_HAND_LEFT]._itype != ITYPE_NONE) {
-		NetSendCmdDelItem(FALSE, INVLOC_HAND_LEFT);
+		r >= SLOTXY_HAND_LEFT_FIRST
+		&& r <= SLOTXY_HAND_LEFT_LAST
+		&& plr[pnum].InvBody[INVLOC_HAND_LEFT]._itype != ITYPE_NONE) {
 		plr[pnum].HoldItem = plr[pnum].InvBody[INVLOC_HAND_LEFT];
-		plr[pnum].InvBody[INVLOC_HAND_LEFT]._itype = ITYPE_NONE;
+		if (!moveToBelt) {
+			NetSendCmdDelItem(FALSE, INVLOC_HAND_LEFT);
+			plr[pnum].InvBody[INVLOC_HAND_LEFT]._itype = ITYPE_NONE;
+		}
 	}
 
 	if (
-	    r >= SLOTXY_HAND_RIGHT_FIRST
-	    && r <= SLOTXY_HAND_RIGHT_LAST
-	    && plr[pnum].InvBody[INVLOC_HAND_RIGHT]._itype != ITYPE_NONE) {
-		NetSendCmdDelItem(FALSE, INVLOC_HAND_RIGHT);
+		r >= SLOTXY_HAND_RIGHT_FIRST
+		&& r <= SLOTXY_HAND_RIGHT_LAST
+		&& plr[pnum].InvBody[INVLOC_HAND_RIGHT]._itype != ITYPE_NONE) {
 		plr[pnum].HoldItem = plr[pnum].InvBody[INVLOC_HAND_RIGHT];
-		plr[pnum].InvBody[INVLOC_HAND_RIGHT]._itype = ITYPE_NONE;
+		if (!moveToBelt) {
+			NetSendCmdDelItem(FALSE, INVLOC_HAND_RIGHT);
+			plr[pnum].InvBody[INVLOC_HAND_RIGHT]._itype = ITYPE_NONE;
+		}
 	}
 
 	if (
-	    r >= SLOTXY_CHEST_FIRST
-	    && r <= SLOTXY_CHEST_LAST
-	    && plr[pnum].InvBody[INVLOC_CHEST]._itype != ITYPE_NONE) {
-		NetSendCmdDelItem(FALSE, INVLOC_CHEST);
+		r >= SLOTXY_CHEST_FIRST
+		&& r <= SLOTXY_CHEST_LAST
+		&& plr[pnum].InvBody[INVLOC_CHEST]._itype != ITYPE_NONE) {
 		plr[pnum].HoldItem = plr[pnum].InvBody[INVLOC_CHEST];
-		plr[pnum].InvBody[INVLOC_CHEST]._itype = ITYPE_NONE;
+		if (!moveToBelt) {
+			NetSendCmdDelItem(FALSE, INVLOC_CHEST);
+			plr[pnum].InvBody[INVLOC_CHEST]._itype = ITYPE_NONE;
+		}
 	}
 
+	BOOL movedToBelt = FALSE;
 	if (r >= SLOTXY_INV_FIRST && r <= SLOTXY_INV_LAST) {
 		ig = r - SLOTXY_INV_FIRST;
 		ii = plr[pnum].InvGrid[ig];
@@ -1313,26 +1328,32 @@ void CheckInvCut(int pnum, int mx, int my)
 				iv = -ii;
 			}
 
-			for (i = 0; i < NUM_INV_GRID_ELEM; i++) {
-				if (plr[pnum].InvGrid[i] == iv || plr[pnum].InvGrid[i] == -iv) {
-					plr[pnum].InvGrid[i] = 0;
-				}
+			plr[pnum].HoldItem = plr[pnum].InvList[iv - 1];
+			if (moveToBelt && CanBePlacedOnBelt(plr[pnum].HoldItem)) {
+				movedToBelt = AutoPlaceItemInBelt(pnum, plr[pnum].HoldItem, TRUE);
 			}
 
-			iv--;
-
-			plr[pnum].HoldItem = plr[pnum].InvList[iv];
-			plr[pnum]._pNumInv--;
-
-			if (plr[pnum]._pNumInv > 0 && plr[pnum]._pNumInv != iv) {
-				plr[pnum].InvList[iv] = plr[pnum].InvList[plr[pnum]._pNumInv];
-
-				for (j = 0; j < NUM_INV_GRID_ELEM; j++) {
-					if (plr[pnum].InvGrid[j] == plr[pnum]._pNumInv + 1) {
-						plr[pnum].InvGrid[j] = iv + 1;
+			if (!moveToBelt || movedToBelt) {
+				for (i = 0; i < NUM_INV_GRID_ELEM; i++) {
+					if (plr[pnum].InvGrid[i] == iv || plr[pnum].InvGrid[i] == -iv) {
+						plr[pnum].InvGrid[i] = 0;
 					}
-					if (plr[pnum].InvGrid[j] == -(plr[pnum]._pNumInv + 1)) {
-						plr[pnum].InvGrid[j] = -iv - 1;
+				}
+
+				iv--;
+
+				plr[pnum]._pNumInv--;
+
+				if (plr[pnum]._pNumInv > 0 && plr[pnum]._pNumInv != iv) {
+					plr[pnum].InvList[iv] = plr[pnum].InvList[plr[pnum]._pNumInv];
+
+					for (j = 0; j < NUM_INV_GRID_ELEM; j++) {
+						if (plr[pnum].InvGrid[j] == plr[pnum]._pNumInv + 1) {
+							plr[pnum].InvGrid[j] = iv + 1;
+						}
+						if (plr[pnum].InvGrid[j] == -(plr[pnum]._pNumInv + 1)) {
+							plr[pnum].InvGrid[j] = -iv - 1;
+						}
 					}
 				}
 			}
@@ -1357,9 +1378,40 @@ void CheckInvCut(int pnum, int mx, int my)
 		CheckItemStats(pnum);
 
 		if (pnum == myplr) {
-			PlaySFX(IS_IGRAB);
-			SetCursor_(plr[pnum].HoldItem._iCurs + CURSOR_FIRSTITEM);
-			SetCursorPos(mx - (cursW >> 1), MouseY - (cursH >> 1));
+			if (!moveToBelt || movedToBelt) {
+				PlaySFX(IS_IGRAB);
+			}
+
+			if (moveToBelt) {
+				if (!movedToBelt) {
+					if (CanBePlacedOnBelt(plr[pnum].HoldItem)) {
+						if (plr[pnum]._pClass == PC_WARRIOR) {
+							PlaySFX(PS_WARR15, FALSE);
+#ifndef SPAWN
+						} else if (plr[pnum]._pClass == PC_ROGUE) {
+							PlaySFX(PS_ROGUE15, FALSE);
+						} else if (plr[pnum]._pClass == PC_SORCERER) {
+							PlaySFX(PS_MAGE15, FALSE);
+#endif
+						}
+					} else {
+						if (plr[pnum]._pClass == PC_WARRIOR) {
+							PlaySFX(PS_WARR37, FALSE);
+#ifndef SPAWN
+						} else if (plr[pnum]._pClass == PC_ROGUE) {
+							PlaySFX(PS_ROGUE37, FALSE);
+						} else if (plr[pnum]._pClass == PC_SORCERER) {
+							PlaySFX(PS_MAGE37, FALSE);
+#endif
+						}
+					}
+				}
+
+				plr[pnum].HoldItem._itype = ITYPE_NONE;
+			} else {
+				SetCursor_(plr[pnum].HoldItem._iCurs + CURSOR_FIRSTITEM);
+				SetCursorPos(mx - (cursW >> 1), MouseY - (cursH >> 1));
+			}
 		}
 	}
 }
@@ -1442,12 +1494,12 @@ void RemoveSpdBarItem(int pnum, int iv)
 	force_redraw = 255;
 }
 
-void CheckInvItem()
+void CheckInvItem(BOOL isShiftHeld)
 {
 	if (pcurs >= CURSOR_FIRSTITEM) {
 		CheckInvPaste(myplr, MouseX, MouseY);
 	} else {
-		CheckInvCut(myplr, MouseX, MouseY);
+		CheckInvCut(myplr, MouseX, MouseY, isShiftHeld);
 	}
 }
 
@@ -2293,6 +2345,22 @@ BOOL DropItemBeforeTrig()
 	}
 
 	return FALSE;
+}
+
+BOOL IsInInventory(int playerNumber, const ItemStruct &item)
+{
+	for (int i = 0; i < NUM_INV_GRID_ELEM; i++) {
+		if (&plr[playerNumber].InvList[i] == &item) {
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+BOOL CanBeMovedToBelt(int playerNumber, const ItemStruct &item)
+{
+	return IsInInventory(playerNumber, item) && CanBePlacedOnBelt(item);
 }
 
 DEVILUTION_END_NAMESPACE

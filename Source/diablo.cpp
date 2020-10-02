@@ -654,6 +654,8 @@ LRESULT GM_Game(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 BOOL LeftMouseDown(int wParam)
 {
+	BOOL shiftIsHeld = wParam == DVL_MK_SHIFT + DVL_MK_LBUTTON;
+
 	if (!gmenu_left_mouse(TRUE) && !control_check_talk_btn() && sgnTimeoutCurs == CURSOR_NONE) {
 		if (deathflag) {
 			control_check_btn_press();
@@ -675,7 +677,7 @@ BOOL LeftMouseDown(int wParam)
 						CheckChrBtns();
 					} else if (invflag && MouseX > RIGHT_PANEL && MouseY < SPANEL_HEIGHT) {
 						if (!dropGoldFlag)
-							CheckInvItem();
+							CheckInvItem(shiftIsHeld);
 					} else if (sbookflag && MouseX > RIGHT_PANEL && MouseY < SPANEL_HEIGHT) {
 						CheckSBook();
 					} else if (pcurs >= CURSOR_FIRSTITEM) {
@@ -687,7 +689,7 @@ BOOL LeftMouseDown(int wParam)
 						if (plr[myplr]._pStatPts != 0 && !spselflag)
 							CheckLvlBtn();
 						if (!lvlbtndown)
-							return LeftMouseCmd(wParam == DVL_MK_SHIFT + DVL_MK_LBUTTON);
+							return LeftMouseCmd(shiftIsHeld);
 					}
 				}
 			} else {

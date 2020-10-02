@@ -3040,6 +3040,10 @@ void PrintItemMisc(ItemStruct *x)
 		sprintf(tempstr, "Level : %i", x->_ivalue);
 		AddPanelString(tempstr, TRUE);
 	}
+
+	if (CanBeMovedToBelt(myplr, *x)) {
+		AddPanelString("Shift+click to move to belt", TRUE);
+	}
 }
 
 void PrintItemDetails(ItemStruct *x)

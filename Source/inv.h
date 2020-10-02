@@ -28,11 +28,11 @@ BOOL WeaponAutoPlace(int pnum);
 int SwapItem(ItemStruct *a, ItemStruct *b);
 void CheckInvPaste(int pnum, int mx, int my);
 void CheckInvSwap(int pnum, BYTE bLoc, int idx, WORD wCI, int seed, BOOL bId);
-void CheckInvCut(int pnum, int mx, int my);
+void CheckInvCut(int pnum, int mx, int my, BOOL moveToBelt);
 void inv_update_rem_item(int pnum, BYTE iv);
 void RemoveInvItem(int pnum, int iv);
 void RemoveSpdBarItem(int pnum, int iv);
-void CheckInvItem();
+void CheckInvItem(BOOL isShiftHeld = FALSE);
 void CheckInvScrn();
 void CheckItemStats(int pnum);
 void CheckBookLevel(int pnum);
@@ -56,6 +56,7 @@ BOOL UseInvItem(int pnum, int cii);
 void DoTelekinesis();
 int CalculateGold(int pnum);
 BOOL DropItemBeforeTrig();
+BOOL CanBeMovedToBelt(int playerNumber, const ItemStruct &item);
 
 /* data */
 
