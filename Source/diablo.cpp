@@ -694,7 +694,7 @@ BOOL LeftMouseDown(int wParam)
 				}
 			} else {
 				if (!talkflag && !dropGoldFlag && !gmenu_is_active())
-					CheckInvScrn();
+					CheckInvScrn(shiftIsHeld);
 				DoPanBtn();
 				if (pcurs > CURSOR_HAND && pcurs < CURSOR_FIRSTITEM)
 					NewCursor(CURSOR_HAND);

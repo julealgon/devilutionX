@@ -3044,6 +3044,10 @@ void PrintItemMisc(ItemStruct *x)
 	if (CanBeMovedToBelt(myplr, *x)) {
 		AddPanelString("Shift+click to move to belt", TRUE);
 	}
+
+	if (CanBeMovedToInventory(myplr, *x)) {
+		AddPanelString("Shift+click to move to inv", TRUE);
+	}
 }
 
 void PrintItemDetails(ItemStruct *x)

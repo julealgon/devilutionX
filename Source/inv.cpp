@@ -1201,7 +1201,7 @@ void CheckInvSwap(int pnum, BYTE bLoc, int idx, WORD wCI, int seed, BOOL bId)
 	CalcPlrInv(pnum, TRUE);
 }
 
-void CheckInvCut(int pnum, int mx, int my, BOOL moveToBelt)
+void CheckInvCut(int pnum, int mx, int my, BOOL moveToOrFromBelt)
 {
 	int r;
 	BOOL done;
@@ -1249,7 +1249,7 @@ void CheckInvCut(int pnum, int mx, int my, BOOL moveToBelt)
 		&& r <= SLOTXY_HEAD_LAST
 		&& plr[pnum].InvBody[INVLOC_HEAD]._itype != ITYPE_NONE) {
 		plr[pnum].HoldItem = plr[pnum].InvBody[INVLOC_HEAD];
-		if (!moveToBelt) {
+		if (!moveToOrFromBelt) {
 			NetSendCmdDelItem(FALSE, INVLOC_HEAD);
 			plr[pnum].InvBody[INVLOC_HEAD]._itype = ITYPE_NONE;
 		}
@@ -1259,7 +1259,7 @@ void CheckInvCut(int pnum, int mx, int my, BOOL moveToBelt)
 		r == SLOTXY_RING_LEFT
 		&& plr[pnum].InvBody[INVLOC_RING_LEFT]._itype != ITYPE_NONE) {
 		plr[pnum].HoldItem = plr[pnum].InvBody[INVLOC_RING_LEFT];
-		if (!moveToBelt) {
+		if (!moveToOrFromBelt) {
 			NetSendCmdDelItem(FALSE, INVLOC_RING_LEFT);
 			plr[pnum].InvBody[INVLOC_RING_LEFT]._itype = ITYPE_NONE;
 		}
@@ -1269,7 +1269,7 @@ void CheckInvCut(int pnum, int mx, int my, BOOL moveToBelt)
 		r == SLOTXY_RING_RIGHT
 		&& plr[pnum].InvBody[INVLOC_RING_RIGHT]._itype != ITYPE_NONE) {
 		plr[pnum].HoldItem = plr[pnum].InvBody[INVLOC_RING_RIGHT];
-		if (!moveToBelt) {
+		if (!moveToOrFromBelt) {
 			NetSendCmdDelItem(FALSE, INVLOC_RING_RIGHT);
 			plr[pnum].InvBody[INVLOC_RING_RIGHT]._itype = ITYPE_NONE;
 		}
@@ -1279,7 +1279,7 @@ void CheckInvCut(int pnum, int mx, int my, BOOL moveToBelt)
 		r == SLOTXY_AMULET
 		&& plr[pnum].InvBody[INVLOC_AMULET]._itype != ITYPE_NONE) {
 		plr[pnum].HoldItem = plr[pnum].InvBody[INVLOC_AMULET];
-		if (!moveToBelt) {
+		if (!moveToOrFromBelt) {
 			NetSendCmdDelItem(FALSE, INVLOC_AMULET);
 			plr[pnum].InvBody[INVLOC_AMULET]._itype = ITYPE_NONE;
 		}
@@ -1290,7 +1290,7 @@ void CheckInvCut(int pnum, int mx, int my, BOOL moveToBelt)
 		&& r <= SLOTXY_HAND_LEFT_LAST
 		&& plr[pnum].InvBody[INVLOC_HAND_LEFT]._itype != ITYPE_NONE) {
 		plr[pnum].HoldItem = plr[pnum].InvBody[INVLOC_HAND_LEFT];
-		if (!moveToBelt) {
+		if (!moveToOrFromBelt) {
 			NetSendCmdDelItem(FALSE, INVLOC_HAND_LEFT);
 			plr[pnum].InvBody[INVLOC_HAND_LEFT]._itype = ITYPE_NONE;
 		}
@@ -1301,7 +1301,7 @@ void CheckInvCut(int pnum, int mx, int my, BOOL moveToBelt)
 		&& r <= SLOTXY_HAND_RIGHT_LAST
 		&& plr[pnum].InvBody[INVLOC_HAND_RIGHT]._itype != ITYPE_NONE) {
 		plr[pnum].HoldItem = plr[pnum].InvBody[INVLOC_HAND_RIGHT];
-		if (!moveToBelt) {
+		if (!moveToOrFromBelt) {
 			NetSendCmdDelItem(FALSE, INVLOC_HAND_RIGHT);
 			plr[pnum].InvBody[INVLOC_HAND_RIGHT]._itype = ITYPE_NONE;
 		}
@@ -1312,13 +1312,13 @@ void CheckInvCut(int pnum, int mx, int my, BOOL moveToBelt)
 		&& r <= SLOTXY_CHEST_LAST
 		&& plr[pnum].InvBody[INVLOC_CHEST]._itype != ITYPE_NONE) {
 		plr[pnum].HoldItem = plr[pnum].InvBody[INVLOC_CHEST];
-		if (!moveToBelt) {
+		if (!moveToOrFromBelt) {
 			NetSendCmdDelItem(FALSE, INVLOC_CHEST);
 			plr[pnum].InvBody[INVLOC_CHEST]._itype = ITYPE_NONE;
 		}
 	}
 
-	BOOL movedToBelt = FALSE;
+	BOOL movedToOrFromBelt = FALSE;
 	if (r >= SLOTXY_INV_FIRST && r <= SLOTXY_INV_LAST) {
 		ig = r - SLOTXY_INV_FIRST;
 		ii = plr[pnum].InvGrid[ig];
@@ -1329,11 +1329,11 @@ void CheckInvCut(int pnum, int mx, int my, BOOL moveToBelt)
 			}
 
 			plr[pnum].HoldItem = plr[pnum].InvList[iv - 1];
-			if (moveToBelt && CanBePlacedOnBelt(plr[pnum].HoldItem)) {
-				movedToBelt = AutoPlaceItemInBelt(pnum, plr[pnum].HoldItem, TRUE);
+			if (moveToOrFromBelt && CanBePlacedOnBelt(plr[pnum].HoldItem)) {
+				movedToOrFromBelt = AutoPlaceItemInBelt(pnum, plr[pnum].HoldItem, TRUE);
 			}
 
-			if (!moveToBelt || movedToBelt) {
+			if (!moveToOrFromBelt || movedToOrFromBelt) {
 				for (i = 0; i < NUM_INV_GRID_ELEM; i++) {
 					if (plr[pnum].InvGrid[i] == iv || plr[pnum].InvGrid[i] == -iv) {
 						plr[pnum].InvGrid[i] = 0;
@@ -1364,8 +1364,14 @@ void CheckInvCut(int pnum, int mx, int my, BOOL moveToBelt)
 		offs = r - SLOTXY_BELT_FIRST;
 		if (plr[pnum].SpdList[offs]._itype != ITYPE_NONE) {
 			plr[pnum].HoldItem = plr[pnum].SpdList[offs];
-			plr[pnum].SpdList[offs]._itype = ITYPE_NONE;
-			drawsbarflag = TRUE;
+			if (moveToOrFromBelt) {
+				movedToOrFromBelt = AutoPlaceItemInInventory(pnum, plr[pnum].HoldItem, TRUE);
+			}
+
+			if (!moveToOrFromBelt || movedToOrFromBelt) {
+				plr[pnum].SpdList[offs]._itype = ITYPE_NONE;
+				drawsbarflag = TRUE;
+			}
 		}
 	}
 
@@ -1378,12 +1384,12 @@ void CheckInvCut(int pnum, int mx, int my, BOOL moveToBelt)
 		CheckItemStats(pnum);
 
 		if (pnum == myplr) {
-			if (!moveToBelt || movedToBelt) {
+			if (!moveToOrFromBelt || movedToOrFromBelt) {
 				PlaySFX(IS_IGRAB);
 			}
 
-			if (moveToBelt) {
-				if (!movedToBelt) {
+			if (moveToOrFromBelt) {
+				if (!movedToOrFromBelt) {
 					if (CanBePlacedOnBelt(plr[pnum].HoldItem)) {
 						if (plr[pnum]._pClass == PC_WARRIOR) {
 							PlaySFX(PS_WARR15, FALSE);
@@ -1506,11 +1512,11 @@ void CheckInvItem(BOOL isShiftHeld)
 /**
  * Check for interactions with belt
  */
-void CheckInvScrn()
+void CheckInvScrn(BOOL isShiftHeld)
 {
 	if (MouseX > 190 + PANEL_LEFT && MouseX < 437 + PANEL_LEFT
 	    && MouseY > PANEL_TOP && MouseY < 33 + PANEL_TOP) {
-		CheckInvItem();
+		CheckInvItem(isShiftHeld);
 	}
 }
 
@@ -2358,9 +2364,25 @@ BOOL IsInInventory(int playerNumber, const ItemStruct &item)
 	return FALSE;
 }
 
+BOOL IsInBelt(int playerNumber, const ItemStruct &item)
+{
+	for (int i = 0; i < MAXBELTITEMS; i++) {
+		if (&plr[playerNumber].SpdList[i] == &item) {
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
 BOOL CanBeMovedToBelt(int playerNumber, const ItemStruct &item)
 {
 	return IsInInventory(playerNumber, item) && CanBePlacedOnBelt(item);
+}
+
+BOOL CanBeMovedToInventory(int playerNumber, const ItemStruct &item)
+{
+	return IsInBelt(playerNumber, item);
 }
 
 DEVILUTION_END_NAMESPACE
