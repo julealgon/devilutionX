@@ -28,7 +28,7 @@ BOOL WeaponAutoPlace(int pnum);
 int SwapItem(ItemStruct *a, ItemStruct *b);
 void CheckInvPaste(int pnum, int mx, int my);
 void CheckInvSwap(int pnum, BYTE bLoc, int idx, WORD wCI, int seed, BOOL bId);
-void CheckInvCut(int pnum, int mx, int my, BOOL moveToOrFromBelt);
+void CheckInvCut(int pnum, int mx, int my, BOOL automaticMove);
 void inv_update_rem_item(int pnum, BYTE iv);
 void RemoveInvItem(int pnum, int iv);
 void RemoveSpdBarItem(int pnum, int iv);
