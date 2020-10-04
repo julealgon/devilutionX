@@ -1207,8 +1207,9 @@ void CheckInvCut(int pnum, int mx, int my, BOOL automaticMove)
 	BOOL done;
 	char ii;
 	int iv, i, j, offs, ig;
+	PlayerStruct &player = plr[pnum];
 
-	if (plr[pnum]._pmode > PM_WALK3) {
+	if (player._pmode > PM_WALK3) {
 		return;
 	}
 
@@ -1242,117 +1243,107 @@ void CheckInvCut(int pnum, int mx, int my, BOOL automaticMove)
 		return;
 	}
 
-	plr[pnum].HoldItem._itype = ITYPE_NONE;
+	ItemStruct &holdItem = player.HoldItem;
+	holdItem._itype = ITYPE_NONE;
 
-	if (
-		r >= SLOTXY_HEAD_FIRST
-		&& r <= SLOTXY_HEAD_LAST
-		&& plr[pnum].InvBody[INVLOC_HEAD]._itype != ITYPE_NONE) {
-		plr[pnum].HoldItem = plr[pnum].InvBody[INVLOC_HEAD];
+	ItemStruct &headItem = player.InvBody[INVLOC_HEAD];
+	if (r >= SLOTXY_HEAD_FIRST && r <= SLOTXY_HEAD_LAST && headItem._itype != ITYPE_NONE) {
+		holdItem = headItem;
 		if (!automaticMove) {
 			NetSendCmdDelItem(FALSE, INVLOC_HEAD);
-			plr[pnum].InvBody[INVLOC_HEAD]._itype = ITYPE_NONE;
+			headItem._itype = ITYPE_NONE;
 		}
 	}
 
-	if (
-		r == SLOTXY_RING_LEFT
-		&& plr[pnum].InvBody[INVLOC_RING_LEFT]._itype != ITYPE_NONE) {
-		plr[pnum].HoldItem = plr[pnum].InvBody[INVLOC_RING_LEFT];
+	ItemStruct &leftRingItem = player.InvBody[INVLOC_RING_LEFT];
+	if (r == SLOTXY_RING_LEFT && leftRingItem._itype != ITYPE_NONE) {
+		holdItem = leftRingItem;
 		if (!automaticMove) {
 			NetSendCmdDelItem(FALSE, INVLOC_RING_LEFT);
-			plr[pnum].InvBody[INVLOC_RING_LEFT]._itype = ITYPE_NONE;
+			leftRingItem._itype = ITYPE_NONE;
 		}
 	}
 
-	if (
-		r == SLOTXY_RING_RIGHT
-		&& plr[pnum].InvBody[INVLOC_RING_RIGHT]._itype != ITYPE_NONE) {
-		plr[pnum].HoldItem = plr[pnum].InvBody[INVLOC_RING_RIGHT];
+	ItemStruct &rightRingItem = player.InvBody[INVLOC_RING_RIGHT];
+	if (r == SLOTXY_RING_RIGHT && rightRingItem._itype != ITYPE_NONE) {
+		holdItem = rightRingItem;
 		if (!automaticMove) {
 			NetSendCmdDelItem(FALSE, INVLOC_RING_RIGHT);
-			plr[pnum].InvBody[INVLOC_RING_RIGHT]._itype = ITYPE_NONE;
+			rightRingItem._itype = ITYPE_NONE;
 		}
 	}
 
-	if (
-		r == SLOTXY_AMULET
-		&& plr[pnum].InvBody[INVLOC_AMULET]._itype != ITYPE_NONE) {
-		plr[pnum].HoldItem = plr[pnum].InvBody[INVLOC_AMULET];
+	ItemStruct &amuletItem = player.InvBody[INVLOC_AMULET];
+	if (r == SLOTXY_AMULET && amuletItem._itype != ITYPE_NONE) {
+		holdItem = amuletItem;
 		if (!automaticMove) {
 			NetSendCmdDelItem(FALSE, INVLOC_AMULET);
-			plr[pnum].InvBody[INVLOC_AMULET]._itype = ITYPE_NONE;
+			amuletItem._itype = ITYPE_NONE;
 		}
 	}
 
-	if (
-		r >= SLOTXY_HAND_LEFT_FIRST
-		&& r <= SLOTXY_HAND_LEFT_LAST
-		&& plr[pnum].InvBody[INVLOC_HAND_LEFT]._itype != ITYPE_NONE) {
-		plr[pnum].HoldItem = plr[pnum].InvBody[INVLOC_HAND_LEFT];
+	ItemStruct &leftHandItem = player.InvBody[INVLOC_HAND_LEFT];
+	if (r >= SLOTXY_HAND_LEFT_FIRST && r <= SLOTXY_HAND_LEFT_LAST && leftHandItem._itype != ITYPE_NONE) {
+		holdItem = leftHandItem;
 		if (!automaticMove) {
 			NetSendCmdDelItem(FALSE, INVLOC_HAND_LEFT);
-			plr[pnum].InvBody[INVLOC_HAND_LEFT]._itype = ITYPE_NONE;
+			leftHandItem._itype = ITYPE_NONE;
 		}
 	}
 
-	if (
-		r >= SLOTXY_HAND_RIGHT_FIRST
-		&& r <= SLOTXY_HAND_RIGHT_LAST
-		&& plr[pnum].InvBody[INVLOC_HAND_RIGHT]._itype != ITYPE_NONE) {
-		plr[pnum].HoldItem = plr[pnum].InvBody[INVLOC_HAND_RIGHT];
+	ItemStruct &rightHandItem = player.InvBody[INVLOC_HAND_RIGHT];
+	if (r >= SLOTXY_HAND_RIGHT_FIRST && r <= SLOTXY_HAND_RIGHT_LAST && rightHandItem._itype != ITYPE_NONE) {
+		holdItem = rightHandItem;
 		if (!automaticMove) {
 			NetSendCmdDelItem(FALSE, INVLOC_HAND_RIGHT);
-			plr[pnum].InvBody[INVLOC_HAND_RIGHT]._itype = ITYPE_NONE;
+			rightHandItem._itype = ITYPE_NONE;
 		}
 	}
 
-	if (
-		r >= SLOTXY_CHEST_FIRST
-		&& r <= SLOTXY_CHEST_LAST
-		&& plr[pnum].InvBody[INVLOC_CHEST]._itype != ITYPE_NONE) {
-		plr[pnum].HoldItem = plr[pnum].InvBody[INVLOC_CHEST];
+	ItemStruct &chestItem = player.InvBody[INVLOC_CHEST];
+	if (r >= SLOTXY_CHEST_FIRST && r <= SLOTXY_CHEST_LAST && chestItem._itype != ITYPE_NONE) {
+		holdItem = chestItem;
 		if (!automaticMove) {
 			NetSendCmdDelItem(FALSE, INVLOC_CHEST);
-			plr[pnum].InvBody[INVLOC_CHEST]._itype = ITYPE_NONE;
+			chestItem._itype = ITYPE_NONE;
 		}
 	}
 
 	BOOL automaticallyMoved = FALSE;
 	if (r >= SLOTXY_INV_FIRST && r <= SLOTXY_INV_LAST) {
 		ig = r - SLOTXY_INV_FIRST;
-		ii = plr[pnum].InvGrid[ig];
+		ii = player.InvGrid[ig];
 		if (ii != 0) {
 			iv = ii;
 			if (ii <= 0) {
 				iv = -ii;
 			}
 
-			plr[pnum].HoldItem = plr[pnum].InvList[iv - 1];
-			if (automaticMove && CanBePlacedOnBelt(plr[pnum].HoldItem)) {
-				automaticallyMoved = AutoPlaceItemInBelt(pnum, plr[pnum].HoldItem, TRUE);
+			holdItem = player.InvList[iv - 1];
+			if (automaticMove && CanBePlacedOnBelt(holdItem)) {
+				automaticallyMoved = AutoPlaceItemInBelt(pnum, holdItem, TRUE);
 			}
 
 			if (!automaticMove || automaticallyMoved) {
 				for (i = 0; i < NUM_INV_GRID_ELEM; i++) {
-					if (plr[pnum].InvGrid[i] == iv || plr[pnum].InvGrid[i] == -iv) {
-						plr[pnum].InvGrid[i] = 0;
+					if (player.InvGrid[i] == iv || player.InvGrid[i] == -iv) {
+						player.InvGrid[i] = 0;
 					}
 				}
 
 				iv--;
 
-				plr[pnum]._pNumInv--;
+				player._pNumInv--;
 
-				if (plr[pnum]._pNumInv > 0 && plr[pnum]._pNumInv != iv) {
-					plr[pnum].InvList[iv] = plr[pnum].InvList[plr[pnum]._pNumInv];
+				if (player._pNumInv > 0 && player._pNumInv != iv) {
+					player.InvList[iv] = player.InvList[player._pNumInv];
 
 					for (j = 0; j < NUM_INV_GRID_ELEM; j++) {
-						if (plr[pnum].InvGrid[j] == plr[pnum]._pNumInv + 1) {
-							plr[pnum].InvGrid[j] = iv + 1;
+						if (player.InvGrid[j] == player._pNumInv + 1) {
+							player.InvGrid[j] = iv + 1;
 						}
-						if (plr[pnum].InvGrid[j] == -(plr[pnum]._pNumInv + 1)) {
-							plr[pnum].InvGrid[j] = -iv - 1;
+						if (player.InvGrid[j] == -(player._pNumInv + 1)) {
+							player.InvGrid[j] = -iv - 1;
 						}
 					}
 				}
@@ -1361,23 +1352,23 @@ void CheckInvCut(int pnum, int mx, int my, BOOL automaticMove)
 	}
 
 	if (r >= SLOTXY_BELT_FIRST) {
-		offs = r - SLOTXY_BELT_FIRST;
-		if (plr[pnum].SpdList[offs]._itype != ITYPE_NONE) {
-			plr[pnum].HoldItem = plr[pnum].SpdList[offs];
+		ItemStruct &beltItem = player.SpdList[r - SLOTXY_BELT_FIRST];
+		if (beltItem._itype != ITYPE_NONE) {
+			holdItem = beltItem;
 			if (automaticMove) {
-				automaticallyMoved = AutoPlaceItemInInventory(pnum, plr[pnum].HoldItem, TRUE);
+				automaticallyMoved = AutoPlaceItemInInventory(pnum, holdItem, TRUE);
 			}
 
 			if (!automaticMove || automaticallyMoved) {
-				plr[pnum].SpdList[offs]._itype = ITYPE_NONE;
+				beltItem._itype = ITYPE_NONE;
 				drawsbarflag = TRUE;
 			}
 		}
 	}
 
-	if (plr[pnum].HoldItem._itype != ITYPE_NONE) {
-		if (plr[pnum].HoldItem._itype == ITYPE_GOLD) {
-			plr[pnum]._pGold = CalculateGold(pnum);
+	if (holdItem._itype != ITYPE_NONE) {
+		if (holdItem._itype == ITYPE_GOLD) {
+			player._pGold = CalculateGold(pnum);
 		}
 
 		CalcPlrInv(pnum, TRUE);
@@ -1390,32 +1381,32 @@ void CheckInvCut(int pnum, int mx, int my, BOOL automaticMove)
 
 			if (automaticMove) {
 				if (!automaticallyMoved) {
-					if (CanBePlacedOnBelt(plr[pnum].HoldItem)) {
-						if (plr[pnum]._pClass == PC_WARRIOR) {
+					if (CanBePlacedOnBelt(holdItem)) {
+						if (player._pClass == PC_WARRIOR) {
 							PlaySFX(PS_WARR15, FALSE);
 #ifndef SPAWN
-						} else if (plr[pnum]._pClass == PC_ROGUE) {
+						} else if (player._pClass == PC_ROGUE) {
 							PlaySFX(PS_ROGUE15, FALSE);
-						} else if (plr[pnum]._pClass == PC_SORCERER) {
+						} else if (player._pClass == PC_SORCERER) {
 							PlaySFX(PS_MAGE15, FALSE);
 #endif
 						}
 					} else {
-						if (plr[pnum]._pClass == PC_WARRIOR) {
+						if (player._pClass == PC_WARRIOR) {
 							PlaySFX(PS_WARR37, FALSE);
 #ifndef SPAWN
-						} else if (plr[pnum]._pClass == PC_ROGUE) {
+						} else if (player._pClass == PC_ROGUE) {
 							PlaySFX(PS_ROGUE37, FALSE);
-						} else if (plr[pnum]._pClass == PC_SORCERER) {
+						} else if (player._pClass == PC_SORCERER) {
 							PlaySFX(PS_MAGE37, FALSE);
 #endif
 						}
 					}
 				}
 
-				plr[pnum].HoldItem._itype = ITYPE_NONE;
+				holdItem._itype = ITYPE_NONE;
 			} else {
-				SetCursor_(plr[pnum].HoldItem._iCurs + CURSOR_FIRSTITEM);
+				SetCursor_(holdItem._iCurs + CURSOR_FIRSTITEM);
 				SetCursorPos(mx - (cursW >> 1), MouseY - (cursH >> 1));
 			}
 		}
