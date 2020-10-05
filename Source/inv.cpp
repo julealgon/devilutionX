@@ -450,6 +450,138 @@ void DrawInvBelt()
 	}
 }
 
+/**
+ * @brief Checks whether the given item is empty or not by inspecting its 'itype' value.
+ * @param item The item to check.
+ * @return 'TRUE' in case the item is empty ('ITYPE_NONE'), and 'FALSE' otherwise.
+ */
+BOOL IsEmpty(const ItemStruct &item)
+{
+	return item._itype == ITYPE_NONE;
+}
+
+/**
+ * @brief Checks whether the given item can be equipped. Since this overload doesn't take player information, it only considers
+ * general aspects about the item, like if its requirements are met and if the item's target location is valid for the body.
+ * @param item The item to check.
+ * @return 'TRUE' in case the item could be equipped in a player, and 'FALSE' otherwise.
+ */
+BOOL CanEquip(const ItemStruct &item)
+{
+	return item._iLoc != ILOC_INVALID && item._iLoc != ILOC_NONE && item._iLoc != ILOC_UNEQUIPABLE && item._iStatFlag;
+}
+
+/**
+ * @brief A specialized version of 'CanEquip(int, ItemStruct&, int)' that specifically checks whether the item can be equipped
+ * in one/both of the player's hands.
+ * @param playerNumber The player number whose inventory will be checked for compatibility with the item.
+ * @param item The item to check.
+ * @return 'TRUE' if the player can currently equip the item in either one of his hands (i.e. the required hands are empty and
+ * allow the item), and 'FALSE' otherwise.
+ */
+BOOL CanWield(int playerNumber, const ItemStruct &item)
+{
+	if (!CanEquip(item) || (item._iLoc != ILOC_ONEHAND && item._iLoc != ILOC_TWOHAND))
+		return FALSE;
+
+	PlayerStruct &player = plr[playerNumber];
+	ItemStruct &leftHandItem = player.InvBody[INVLOC_HAND_LEFT];
+	ItemStruct &rightHandItem = player.InvBody[INVLOC_HAND_RIGHT];
+
+	if (IsEmpty(leftHandItem) && IsEmpty(rightHandItem)) {
+		return TRUE;
+	}
+
+	if (!IsEmpty(leftHandItem) && !IsEmpty(rightHandItem)) {
+		return FALSE;
+	}
+
+	ItemStruct &occupiedHand = !IsEmpty(leftHandItem) ? leftHandItem : rightHandItem;
+
+	return item._iLoc != ILOC_TWOHAND && occupiedHand._iLoc != ILOC_TWOHAND && item._iClass != occupiedHand._iClass;
+}
+
+/**
+ * @brief Checks whether the specified item can be equipped in the desired body location on the player.
+ * @param playerNumber The player number whose inventory will be checked for compatibility with the item.
+ * @param item The item to check.
+ * @param bodyLocation The location in the inventory to be checked against. Can be one of 'inv_body_loc' members.
+ * @return 'TRUE' if the player can currently equip the item in the specified body location (i.e. the body location is empty and
+ * allows the item), and 'FALSE' otherwise.
+ */
+BOOL CanEquip(int playerNumber, const ItemStruct &item, int bodyLocation)
+{
+	PlayerStruct &player = plr[playerNumber];
+	if (!CanEquip(item) || player._pmode > PM_WALK3 || !IsEmpty(player.InvBody[bodyLocation]))
+		return FALSE;
+
+	switch (bodyLocation) {
+	case INVLOC_AMULET:
+		return item._iLoc == ILOC_AMULET;
+
+	case INVLOC_CHEST:
+		return item._iLoc == ILOC_ARMOR;
+
+	case INVLOC_HAND_LEFT: 
+	case INVLOC_HAND_RIGHT:
+		return CanWield(playerNumber, item);
+
+	case INVLOC_HEAD:
+		return item._iLoc == ILOC_HELM;
+
+	case INVLOC_RING_LEFT:
+	case INVLOC_RING_RIGHT:
+		return item._iLoc == ILOC_RING;
+
+	default:
+		return FALSE;
+	}
+}
+
+/**
+ * @brief Automatically attempts to equip the specified item in a specific location in the player's body.
+ * @note On success, this will broadcast an equipment_change event to let other players know about the equipment change.
+ * @param playerNumber The player number whose inventory will be checked for compatibility with the item.
+ * @param item The item to equip.
+ * @param bodyLocation The location in the inventory where the item should be equipped. Can be one of 'inv_body_loc' members.
+ * @return 'TRUE' if the item was equipped and 'FALSE' otherwise.
+ */
+BOOL AutoEquip(int playerNumber, const ItemStruct &item, int bodyLocation)
+{
+	if (!CanEquip(playerNumber, item, bodyLocation)) {
+		return FALSE;
+	}
+
+	plr[playerNumber].InvBody[bodyLocation] = item;
+
+	NetSendCmdChItem(FALSE, bodyLocation);
+	CalcPlrInv(playerNumber, TRUE);
+
+	return TRUE;
+}
+
+/**
+ * @brief Automatically attempts to equip the specified item in the most appropriate location in the player's body.
+ * @note On success, this will broadcast an equipment_change event to let other players know about the equipment change.
+ * @param playerNumber The player number whose inventory will be checked for compatibility with the item.
+ * @param item The item to equip.
+ * @return 'TRUE' if the item was equipped and 'FALSE' otherwise.
+ */
+BOOL AutoEquip(int playerNumber, const ItemStruct &item)
+{
+	if (!CanEquip(item)) {
+		return FALSE;
+	}
+
+	for (int bodyLocation = INVLOC_HEAD; bodyLocation < NUM_INVLOC; bodyLocation++) {
+		if (AutoEquip(playerNumber, item, bodyLocation)) {
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
 InvXY GetInventorySize(const ItemStruct &item)
 {
 	int itemSizeIndex = item._iCurs + CURSOR_FIRSTITEM;
@@ -722,32 +854,6 @@ BOOL GoldAutoPlace(int pnum)
 	}
 
 	return done;
-}
-
-BOOL WeaponAutoPlace(int pnum)
-{
-	if (plr[pnum].HoldItem._iLoc != ILOC_TWOHAND) {
-		if (plr[pnum].InvBody[INVLOC_HAND_LEFT]._itype != ITYPE_NONE && plr[pnum].InvBody[INVLOC_HAND_LEFT]._iClass == ICLASS_WEAPON)
-			return FALSE;
-		if (plr[pnum].InvBody[INVLOC_HAND_RIGHT]._itype != ITYPE_NONE && plr[pnum].InvBody[INVLOC_HAND_RIGHT]._iClass == ICLASS_WEAPON)
-			return FALSE;
-		if (plr[pnum].InvBody[INVLOC_HAND_LEFT]._itype == ITYPE_NONE) {
-			NetSendCmdChItem(TRUE, INVLOC_HAND_LEFT);
-			plr[pnum].InvBody[INVLOC_HAND_LEFT] = plr[pnum].HoldItem;
-			return TRUE;
-		}
-		if (plr[pnum].InvBody[INVLOC_HAND_RIGHT]._itype == ITYPE_NONE && plr[pnum].InvBody[INVLOC_HAND_LEFT]._iLoc != ILOC_TWOHAND) {
-			NetSendCmdChItem(TRUE, INVLOC_HAND_RIGHT);
-			plr[pnum].InvBody[INVLOC_HAND_RIGHT] = plr[pnum].HoldItem;
-			return TRUE;
-		}
-	} else if (plr[pnum].InvBody[INVLOC_HAND_LEFT]._itype == ITYPE_NONE && plr[pnum].InvBody[INVLOC_HAND_RIGHT]._itype == ITYPE_NONE) {
-		NetSendCmdChItem(TRUE, INVLOC_HAND_LEFT);
-		plr[pnum].InvBody[INVLOC_HAND_LEFT] = plr[pnum].HoldItem;
-		return TRUE;
-	}
-
-	return FALSE;
 }
 
 int SwapItem(ItemStruct *a, ItemStruct *b)
@@ -1683,16 +1789,7 @@ void AutoGetItem(int pnum, int ii)
 	if (plr[pnum].HoldItem._itype == ITYPE_GOLD) {
 		done = GoldAutoPlace(pnum);
 	} else {
-		done = FALSE;
-		if (((plr[pnum]._pgfxnum & 0xF) == ANIM_ID_UNARMED || (plr[pnum]._pgfxnum & 0xF) == ANIM_ID_UNARMED_SHIELD) && plr[pnum]._pmode <= PM_WALK3) {
-			if (plr[pnum].HoldItem._iStatFlag) {
-				if (plr[pnum].HoldItem._iClass == ICLASS_WEAPON) {
-					done = WeaponAutoPlace(pnum);
-					if (done)
-						CalcPlrInv(pnum, TRUE);
-				}
-			}
-		}
+		done = AutoEquip(pnum, plr[pnum].HoldItem);
 		if (!done) {
 			done = AutoPlaceItemInBelt(pnum, plr[pnum].HoldItem, TRUE);
 		}
