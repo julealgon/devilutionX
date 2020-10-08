@@ -1608,8 +1608,6 @@ void RemoveInvItem(int pnum, int iv)
 	}
 
 	CalcPlrScrolls(pnum);
-
-	EnsureValidReadiedSpell(plr[pnum]);
 }
 
 void RemoveSpdBarItem(int pnum, int iv)
@@ -1617,8 +1615,6 @@ void RemoveSpdBarItem(int pnum, int iv)
 	plr[pnum].SpdList[iv]._itype = ITYPE_NONE;
 
 	CalcPlrScrolls(pnum);
-
-	EnsureValidReadiedSpell(plr[pnum]);
 	force_redraw = 255;
 }
 
