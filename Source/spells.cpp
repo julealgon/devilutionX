@@ -59,7 +59,7 @@ void UseMana(int id, int sn)
 	if (id == myplr) {
 		switch (plr[id]._pSplType) {
 		case RSPLTYPE_SKILL:
-		case RSPLTYPE_INVALID:
+		case RSPLTYPE_NONE:
 			break;
 		case RSPLTYPE_SCROLL:
 			RemoveScroll(id);

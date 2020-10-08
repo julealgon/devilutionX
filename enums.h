@@ -2094,7 +2094,7 @@ typedef enum spell_type {
 	RSPLTYPE_SPELL   = 0x1,
 	RSPLTYPE_SCROLL  = 0x2,
 	RSPLTYPE_CHARGES = 0x3,
-	RSPLTYPE_INVALID = 0x4,
+	RSPLTYPE_NONE    = 0x4,
 } spell_type;
 
 typedef enum cursor_id {

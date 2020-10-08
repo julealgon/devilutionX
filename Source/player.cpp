@@ -867,7 +867,7 @@ void InitPlayer(int pnum, BOOL FirstTime)
 	ClearPlrRVars(&plr[pnum]);
 
 	if (FirstTime) {
-		plr[pnum]._pRSplType = RSPLTYPE_INVALID;
+		plr[pnum]._pRSplType = RSPLTYPE_NONE;
 		plr[pnum]._pRSpell = SPL_INVALID;
 		plr[pnum]._pSBkSpell = SPL_INVALID;
 		plr[pnum]._pSpell = plr[pnum]._pRSpell;
@@ -2826,7 +2826,7 @@ BOOL PM_DoSpell(int pnum)
 				if (!(plr[pnum]._pScrlSpells
 				        & 1ULL << (plr[pnum]._pRSpell - 1))) {
 					plr[pnum]._pRSpell = SPL_INVALID;
-					plr[pnum]._pRSplType = RSPLTYPE_INVALID;
+					plr[pnum]._pRSplType = RSPLTYPE_NONE;
 					force_redraw = 255;
 				}
 			}
@@ -2835,7 +2835,7 @@ BOOL PM_DoSpell(int pnum)
 				if (!(plr[pnum]._pISpells
 				        & 1ULL << (plr[pnum]._pRSpell - 1))) {
 					plr[pnum]._pRSpell = SPL_INVALID;
-					plr[pnum]._pRSplType = RSPLTYPE_INVALID;
+					plr[pnum]._pRSplType = RSPLTYPE_NONE;
 					force_redraw = 255;
 				}
 			}

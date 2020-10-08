@@ -465,7 +465,7 @@ void CalcPlrItemVals(int p, BOOL Loadgfx)
 	if (plr[p]._pRSplType == RSPLTYPE_CHARGES
 	    && !(spl & (1ULL << (plr[p]._pRSpell - 1)))) {
 		plr[p]._pRSpell = SPL_INVALID;
-		plr[p]._pRSplType = RSPLTYPE_INVALID;
+		plr[p]._pRSplType = RSPLTYPE_NONE;
 		force_redraw = 255;
 	}
 
@@ -636,7 +636,7 @@ void CalcPlrScrolls(int p)
 	if (plr[p]._pRSplType == RSPLTYPE_SCROLL) {
 		if (!(plr[p]._pScrlSpells & 1ULL << (plr[p]._pRSpell - 1))) {
 			plr[p]._pRSpell = SPL_INVALID;
-			plr[p]._pRSplType = RSPLTYPE_INVALID;
+			plr[p]._pRSplType = RSPLTYPE_NONE;
 			force_redraw = 255;
 		}
 	}
@@ -3247,13 +3247,13 @@ void UseItem(int p, int Mid, int spl)
 	case IMISC_SCROLL:
 		if (spelldata[spl].sTargeted) {
 			plr[p]._pTSpell = spl;
-			plr[p]._pTSplType = RSPLTYPE_INVALID;
+			plr[p]._pTSplType = RSPLTYPE_NONE;
 			if (p == myplr)
 				NewCursor(CURSOR_TELEPORT);
 		} else {
 			ClrPlrPath(p);
 			plr[p]._pSpell = spl;
-			plr[p]._pSplType = RSPLTYPE_INVALID;
+			plr[p]._pSplType = RSPLTYPE_NONE;
 			plr[p]._pSplFrom = 3;
 			plr[p].destAction = ACTION_SPELL;
 			plr[p].destParam1 = cursmx;
@@ -3265,13 +3265,13 @@ void UseItem(int p, int Mid, int spl)
 	case IMISC_SCROLLT:
 		if (spelldata[spl].sTargeted) {
 			plr[p]._pTSpell = spl;
-			plr[p]._pTSplType = RSPLTYPE_INVALID;
+			plr[p]._pTSplType = RSPLTYPE_NONE;
 			if (p == myplr)
 				NewCursor(CURSOR_TELEPORT);
 		} else {
 			ClrPlrPath(p);
 			plr[p]._pSpell = spl;
-			plr[p]._pSplType = RSPLTYPE_INVALID;
+			plr[p]._pSplType = RSPLTYPE_NONE;
 			plr[p]._pSplFrom = 3;
 			plr[p].destAction = ACTION_SPELL;
 			plr[p].destParam1 = cursmx;

@@ -268,7 +268,7 @@ void SetSpellTrans(char t)
 			SplTransTbl[PAL16_YELLOW - PAL16_ORANGE + i] = i;
 		}
 		break;
-	case RSPLTYPE_INVALID:
+	case RSPLTYPE_NONE:
 		SplTransTbl[PAL8_YELLOW] = PAL16_GRAY + 1;
 		SplTransTbl[PAL8_YELLOW + 1] = PAL16_GRAY + 3;
 		SplTransTbl[PAL8_YELLOW + 2] = PAL16_GRAY + 5;
@@ -299,14 +299,14 @@ void DrawSpell()
 	if (st == RSPLTYPE_SPELL && spl != SPL_INVALID) {
 		tlvl = plr[myplr]._pISplLvlAdd + plr[myplr]._pSplLvl[spl];
 		if (!CheckSpell(myplr, spl, RSPLTYPE_SPELL, TRUE))
-			st = RSPLTYPE_INVALID;
+			st = RSPLTYPE_NONE;
 		if (tlvl <= 0)
-			st = RSPLTYPE_INVALID;
+			st = RSPLTYPE_NONE;
 	}
-	if (currlevel == 0 && st != RSPLTYPE_INVALID && !spelldata[spl].sTownSpell)
-		st = RSPLTYPE_INVALID;
+	if (currlevel == 0 && st != RSPLTYPE_NONE && !spelldata[spl].sTownSpell)
+		st = RSPLTYPE_NONE;
 	if (plr[myplr]._pRSpell < 0)
-		st = RSPLTYPE_INVALID;
+		st = RSPLTYPE_NONE;
 	SetSpellTrans(st);
 	if (spl != SPL_INVALID)
 		DrawSpellCel(PANEL_X + 565, PANEL_Y + 119, pSpellCels, SpellITbl[spl], SPLICONLENGTH);
@@ -356,11 +356,11 @@ void DrawSpellList()
 				if (s > 0)
 					trans = RSPLTYPE_SPELL;
 				else
-					trans = RSPLTYPE_INVALID;
+					trans = RSPLTYPE_NONE;
 				SetSpellTrans(trans);
 			}
 			if (currlevel == 0 && !spelldata[j].sTownSpell)
-				SetSpellTrans(RSPLTYPE_INVALID);
+				SetSpellTrans(RSPLTYPE_NONE);
 			DrawSpellCel(x, y, pSpellCels, SpellITbl[j], SPLICONLENGTH);
 			lx = x - BORDER_LEFT;
 			ly = y - BORDER_TOP - SPLICONLENGTH;
@@ -1773,14 +1773,14 @@ char GetSBookTrans(int ii, BOOL townok)
 	}
 	if (st == RSPLTYPE_SPELL) {
 		if (!CheckSpell(myplr, ii, RSPLTYPE_SPELL, TRUE)) {
-			st = RSPLTYPE_INVALID;
+			st = RSPLTYPE_NONE;
 		}
 		if ((char)(plr[myplr]._pSplLvl[ii] + plr[myplr]._pISplLvlAdd) <= 0) {
-			st = RSPLTYPE_INVALID;
+			st = RSPLTYPE_NONE;
 		}
 	}
-	if (townok && currlevel == 0 && st != RSPLTYPE_INVALID && !spelldata[ii].sTownSpell) {
-		st = RSPLTYPE_INVALID;
+	if (townok && currlevel == 0 && st != RSPLTYPE_NONE && !spelldata[ii].sTownSpell) {
+		st = RSPLTYPE_NONE;
 	}
 
 	return st;
