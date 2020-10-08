@@ -1609,17 +1609,7 @@ void RemoveInvItem(int pnum, int iv)
 
 	CalcPlrScrolls(pnum);
 
-	if (plr[pnum]._pRSplType == RSPLTYPE_SCROLL) {
-		if (plr[pnum]._pRSpell != SPL_INVALID) {
-			if (!(
-			        plr[pnum]._pScrlSpells
-			        & (1ULL << (plr[pnum]._pRSpell - 1)))) {
-				plr[pnum]._pRSpell = SPL_INVALID;
-			}
-
-			force_redraw = 255;
-		}
-	}
+	EnsureValidReadiedSpell(plr[pnum]);
 }
 
 void RemoveSpdBarItem(int pnum, int iv)
@@ -1628,15 +1618,7 @@ void RemoveSpdBarItem(int pnum, int iv)
 
 	CalcPlrScrolls(pnum);
 
-	if (plr[pnum]._pRSplType == RSPLTYPE_SCROLL) {
-		if (plr[pnum]._pRSpell != SPL_INVALID) {
-			if (!(
-			        plr[pnum]._pScrlSpells
-			        & (1ULL << (plr[pnum]._pRSpell - 1)))) {
-				plr[pnum]._pRSpell = SPL_INVALID;
-			}
-		}
-	}
+	EnsureValidReadiedSpell(plr[pnum]);
 	force_redraw = 255;
 }
 

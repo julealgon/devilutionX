@@ -83,6 +83,58 @@ void UseMana(int id, int sn)
 	}
 }
 
+unsigned long long GetSpellBitmask(int spellId)
+{
+	return 1ULL << (spellId - 1);
+}
+
+bool IsReadiedSpellValid(const PlayerStruct &player)
+{
+	switch (player._pRSplType) {
+	case RSPLTYPE_SKILL:
+	case RSPLTYPE_SPELL:
+	case RSPLTYPE_NONE:
+		return true;
+
+	case RSPLTYPE_CHARGES:
+		return player._pISpells & GetSpellBitmask(player._pRSpell);
+
+	case RSPLTYPE_SCROLL:
+		return player._pScrlSpells & GetSpellBitmask(player._pRSpell);
+
+	default:
+		return false;
+	}
+}
+
+void ClearReadiedSpell(PlayerStruct &player)
+{
+	bool needsRedraw = false;
+
+	int &readiedSpell = player._pRSpell;
+	if (readiedSpell != SPL_INVALID) {
+		readiedSpell = SPL_INVALID;
+		needsRedraw = true;
+	}
+
+	char &readiedSpellType = player._pRSplType;
+	if (readiedSpellType != RSPLTYPE_NONE) {
+		readiedSpellType = RSPLTYPE_NONE;
+		needsRedraw = true;
+	}
+
+	if (needsRedraw) {
+		force_redraw = 255;
+	}
+}
+
+void EnsureValidReadiedSpell(PlayerStruct &player)
+{
+	if (!IsReadiedSpellValid(player)) {
+		ClearReadiedSpell(player);
+	}
+}
+
 BOOL CheckSpell(int id, int sn, char st, BOOL manaonly)
 {
 	BOOL result;
