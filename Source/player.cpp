@@ -2824,7 +2824,7 @@ BOOL PM_DoSpell(int pnum)
 		if (!plr[pnum]._pSplFrom) {
 			if (plr[pnum]._pRSplType == RSPLTYPE_SCROLL) {
 				if (!(plr[pnum]._pScrlSpells
-				        & (unsigned __int64)1 << (plr[pnum]._pRSpell - 1))) {
+				        & 1ULL << (plr[pnum]._pRSpell - 1))) {
 					plr[pnum]._pRSpell = SPL_INVALID;
 					plr[pnum]._pRSplType = RSPLTYPE_INVALID;
 					force_redraw = 255;
@@ -2833,7 +2833,7 @@ BOOL PM_DoSpell(int pnum)
 
 			if (plr[pnum]._pRSplType == RSPLTYPE_CHARGES) {
 				if (!(plr[pnum]._pISpells
-				        & (unsigned __int64)1 << (plr[pnum]._pRSpell - 1))) {
+				        & 1ULL << (plr[pnum]._pRSpell - 1))) {
 					plr[pnum]._pRSpell = SPL_INVALID;
 					plr[pnum]._pRSplType = RSPLTYPE_INVALID;
 					force_redraw = 255;
