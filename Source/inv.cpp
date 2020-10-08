@@ -2490,8 +2490,9 @@ BOOL DropItemBeforeTrig()
 
 BOOL IsInInventory(int playerNumber, const ItemStruct &item)
 {
-	for (int i = 0; i < NUM_INV_GRID_ELEM; i++) {
-		if (&plr[playerNumber].InvList[i] == &item) {
+	PlayerStruct &player = plr[playerNumber]; 
+	for (int i = 0; i < player._pNumInv; i++) {
+		if (&player.InvList[i] == &item) {
 			return TRUE;
 		}
 	}
