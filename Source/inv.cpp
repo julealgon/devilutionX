@@ -554,7 +554,7 @@ BOOL AutoEquip(int playerNumber, const ItemStruct &item, int bodyLocation)
 
 	plr[playerNumber].InvBody[bodyLocation] = item;
 
-	NetSendCmdChItem(FALSE, bodyLocation);
+	NetSendCmdChItem(FALSE, item, bodyLocation);
 	CalcPlrInv(playerNumber, TRUE);
 
 	return TRUE;
@@ -1012,7 +1012,7 @@ void CheckInvPaste(int pnum, int mx, int my)
 	cn = CURSOR_HAND;
 	switch (il) {
 	case ILOC_HELM:
-		NetSendCmdChItem(FALSE, INVLOC_HEAD);
+		NetSendCmdChItem(FALSE, plr[pnum].HoldItem, INVLOC_HEAD);
 		if (plr[pnum].InvBody[INVLOC_HEAD]._itype == ITYPE_NONE)
 			plr[pnum].InvBody[INVLOC_HEAD] = plr[pnum].HoldItem;
 		else
@@ -1020,13 +1020,13 @@ void CheckInvPaste(int pnum, int mx, int my)
 		break;
 	case ILOC_RING:
 		if (r == 4) {
-			NetSendCmdChItem(FALSE, INVLOC_RING_LEFT);
+			NetSendCmdChItem(FALSE, plr[pnum].HoldItem, INVLOC_RING_LEFT);
 			if (plr[pnum].InvBody[INVLOC_RING_LEFT]._itype == ITYPE_NONE)
 				plr[pnum].InvBody[INVLOC_RING_LEFT] = plr[pnum].HoldItem;
 			else
 				cn = SwapItem(&plr[pnum].InvBody[INVLOC_RING_LEFT], &plr[pnum].HoldItem);
 		} else {
-			NetSendCmdChItem(FALSE, INVLOC_RING_RIGHT);
+			NetSendCmdChItem(FALSE, plr[pnum].HoldItem, INVLOC_RING_RIGHT);
 			if (plr[pnum].InvBody[INVLOC_RING_RIGHT]._itype == ITYPE_NONE)
 				plr[pnum].InvBody[INVLOC_RING_RIGHT] = plr[pnum].HoldItem;
 			else
@@ -1034,7 +1034,7 @@ void CheckInvPaste(int pnum, int mx, int my)
 		}
 		break;
 	case ILOC_AMULET:
-		NetSendCmdChItem(FALSE, INVLOC_AMULET);
+		NetSendCmdChItem(FALSE, plr[pnum].HoldItem, INVLOC_AMULET);
 		if (plr[pnum].InvBody[INVLOC_AMULET]._itype == ITYPE_NONE)
 			plr[pnum].InvBody[INVLOC_AMULET] = plr[pnum].HoldItem;
 		else
@@ -1044,48 +1044,48 @@ void CheckInvPaste(int pnum, int mx, int my)
 		if (r <= 12) {
 			if (plr[pnum].InvBody[INVLOC_HAND_LEFT]._itype == ITYPE_NONE) {
 				if (plr[pnum].InvBody[INVLOC_HAND_RIGHT]._itype == ITYPE_NONE || plr[pnum].InvBody[INVLOC_HAND_RIGHT]._iClass != plr[pnum].HoldItem._iClass) {
-					NetSendCmdChItem(FALSE, INVLOC_HAND_LEFT);
+					NetSendCmdChItem(FALSE, plr[pnum].HoldItem, INVLOC_HAND_LEFT);
 					plr[pnum].InvBody[INVLOC_HAND_LEFT] = plr[pnum].HoldItem;
 				} else {
-					NetSendCmdChItem(FALSE, INVLOC_HAND_RIGHT);
+					NetSendCmdChItem(FALSE, plr[pnum].HoldItem, INVLOC_HAND_RIGHT);
 					cn = SwapItem(&plr[pnum].InvBody[INVLOC_HAND_RIGHT], &plr[pnum].HoldItem);
 				}
 				break;
 			}
 			if (plr[pnum].InvBody[INVLOC_HAND_RIGHT]._itype == ITYPE_NONE || plr[pnum].InvBody[INVLOC_HAND_RIGHT]._iClass != plr[pnum].HoldItem._iClass) {
-				NetSendCmdChItem(FALSE, INVLOC_HAND_LEFT);
+				NetSendCmdChItem(FALSE, plr[pnum].HoldItem, INVLOC_HAND_LEFT);
 				cn = SwapItem(&plr[pnum].InvBody[INVLOC_HAND_LEFT], &plr[pnum].HoldItem);
 				break;
 			}
 
-			NetSendCmdChItem(FALSE, INVLOC_HAND_RIGHT);
+			NetSendCmdChItem(FALSE, plr[pnum].HoldItem, INVLOC_HAND_RIGHT);
 			cn = SwapItem(&plr[pnum].InvBody[INVLOC_HAND_RIGHT], &plr[pnum].HoldItem);
 			break;
 		}
 		if (plr[pnum].InvBody[INVLOC_HAND_RIGHT]._itype == ITYPE_NONE) {
 			if (plr[pnum].InvBody[INVLOC_HAND_LEFT]._itype == ITYPE_NONE || plr[pnum].InvBody[INVLOC_HAND_LEFT]._iLoc != ILOC_TWOHAND) {
 				if (plr[pnum].InvBody[INVLOC_HAND_LEFT]._itype == ITYPE_NONE || plr[pnum].InvBody[INVLOC_HAND_LEFT]._iClass != plr[pnum].HoldItem._iClass) {
-					NetSendCmdChItem(FALSE, INVLOC_HAND_RIGHT);
+					NetSendCmdChItem(FALSE, plr[pnum].HoldItem, INVLOC_HAND_RIGHT);
 					plr[pnum].InvBody[INVLOC_HAND_RIGHT] = plr[pnum].HoldItem;
 					break;
 				}
-				NetSendCmdChItem(FALSE, INVLOC_HAND_LEFT);
+				NetSendCmdChItem(FALSE, plr[pnum].HoldItem, INVLOC_HAND_LEFT);
 				cn = SwapItem(&plr[pnum].InvBody[INVLOC_HAND_LEFT], &plr[pnum].HoldItem);
 				break;
 			}
 			NetSendCmdDelItem(FALSE, INVLOC_HAND_LEFT);
-			NetSendCmdChItem(FALSE, INVLOC_HAND_RIGHT);
+			NetSendCmdChItem(FALSE, plr[pnum].HoldItem, INVLOC_HAND_RIGHT);
 			SwapItem(&plr[pnum].InvBody[INVLOC_HAND_RIGHT], &plr[pnum].InvBody[INVLOC_HAND_LEFT]);
 			cn = SwapItem(&plr[pnum].InvBody[INVLOC_HAND_RIGHT], &plr[pnum].HoldItem);
 			break;
 		}
 
 		if (plr[pnum].InvBody[INVLOC_HAND_LEFT]._itype != ITYPE_NONE && plr[pnum].InvBody[INVLOC_HAND_LEFT]._iClass == plr[pnum].HoldItem._iClass) {
-			NetSendCmdChItem(FALSE, INVLOC_HAND_LEFT);
+			NetSendCmdChItem(FALSE, plr[pnum].HoldItem, INVLOC_HAND_LEFT);
 			cn = SwapItem(&plr[pnum].InvBody[INVLOC_HAND_LEFT], &plr[pnum].HoldItem);
 			break;
 		}
-		NetSendCmdChItem(FALSE, INVLOC_HAND_RIGHT);
+		NetSendCmdChItem(FALSE, plr[pnum].HoldItem, INVLOC_HAND_RIGHT);
 		cn = SwapItem(&plr[pnum].InvBody[INVLOC_HAND_RIGHT], &plr[pnum].HoldItem);
 		break;
 	case ILOC_TWOHAND:
@@ -1118,12 +1118,12 @@ void CheckInvPaste(int pnum, int mx, int my)
 		}
 
 		if (plr[pnum].InvBody[INVLOC_HAND_LEFT]._itype != ITYPE_NONE || plr[pnum].InvBody[INVLOC_HAND_RIGHT]._itype != ITYPE_NONE) {
-			NetSendCmdChItem(FALSE, INVLOC_HAND_LEFT);
+			NetSendCmdChItem(FALSE, plr[pnum].HoldItem, INVLOC_HAND_LEFT);
 			if (plr[pnum].InvBody[INVLOC_HAND_LEFT]._itype == ITYPE_NONE)
 				SwapItem(&plr[pnum].InvBody[INVLOC_HAND_LEFT], &plr[pnum].InvBody[INVLOC_HAND_RIGHT]);
 			cn = SwapItem(&plr[pnum].InvBody[INVLOC_HAND_LEFT], &plr[pnum].HoldItem);
 		} else {
-			NetSendCmdChItem(FALSE, INVLOC_HAND_LEFT);
+			NetSendCmdChItem(FALSE, plr[pnum].HoldItem, INVLOC_HAND_LEFT);
 			plr[pnum].InvBody[INVLOC_HAND_LEFT] = plr[pnum].HoldItem;
 		}
 		if (plr[pnum].InvBody[INVLOC_HAND_LEFT]._itype == ITYPE_STAFF && plr[pnum].InvBody[INVLOC_HAND_LEFT]._iSpell != 0 && plr[pnum].InvBody[INVLOC_HAND_LEFT]._iCharges > 0) {
@@ -1133,7 +1133,7 @@ void CheckInvPaste(int pnum, int mx, int my)
 		}
 		break;
 	case ILOC_ARMOR:
-		NetSendCmdChItem(FALSE, INVLOC_CHEST);
+		NetSendCmdChItem(FALSE, plr[pnum].HoldItem, INVLOC_CHEST);
 		if (plr[pnum].InvBody[INVLOC_CHEST]._itype == ITYPE_NONE)
 			plr[pnum].InvBody[INVLOC_CHEST] = plr[pnum].HoldItem;
 		else

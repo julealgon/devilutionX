@@ -56,7 +56,7 @@ void NetSendCmdGItem2(BOOL usonly, BYTE bCmd, BYTE mast, BYTE pnum, TCmdGItem *p
 BOOL NetSendCmdReq2(BYTE bCmd, BYTE mast, BYTE pnum, TCmdGItem *p);
 void NetSendCmdExtra(TCmdGItem *p);
 void NetSendCmdPItem(BOOL bHiPri, BYTE bCmd, BYTE x, BYTE y);
-void NetSendCmdChItem(BOOL bHiPri, BYTE bLoc);
+void NetSendCmdChItem(BOOL bHiPri, const ItemStruct &item, BYTE bLoc);
 void NetSendCmdDelItem(BOOL bHiPri, BYTE bLoc);
 void NetSendCmdDItem(BOOL bHiPri, int ii);
 void NetSendCmdDamage(BOOL bHiPri, BYTE bPlr, DWORD dwDam);
