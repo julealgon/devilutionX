@@ -1579,6 +1579,69 @@ void inv_update_rem_item(int pnum, BYTE iv)
 	}
 }
 
+/**
+ * @brief Removes item with index 'iv' from the inventory. This index is not based on the inventory cell number, but on
+ * the index of the item inside 'InvList'.
+ * @note Inventory information is represented internally by 3 distinct player fields: 'InvList[40]', 'InvGrid[40]' and
+ * '_pNumInv'.
+ *
+ * - 'InvList': contains the actual list of items held in inventory. This is where all item data is actually stored
+ * internally and does not consider the size of items.
+ *
+ * - '_pNumInv': holds the number of items currently in the player inventory. This is the size of 'InvList'. Attempting
+ * to access elements in 'InvList' beyond this value will result in invalid items being read.
+ *
+ * - 'InvGrid': represents the inventory grid as seen in the UI. Each grid cell contains a number that represents "in which
+ * position the item is inside 'InvList'". Negative values mean extra space occupied by the item. For example, a Short Sword
+ * occupies 3 slots. If the sword is in the first position inside 'InvList', the grid will contain a value of "1" in the
+ * last occupied cell for the sword, and a value of "-1" to represent the other 2 occupied spaces. Indexes are 1-based to
+ * allow for the value "0" representing "no item in the cell".
+ *    Access to 'InvGrid' is done with a linear index, so to access cell (column 2, row 4), index 2*10+4 (24) is used.
+ *
+ * Removal Example (remove Short Sword - RemoveInvItem(pnum, 1)):
+ *
+ * Before:
+ * - InvList[0] = Potion of Healing
+ * - InvList[1] = Short Sword
+ * - InvList[2] = Cap
+ * - InvList[3] = Gold
+ * - _pNumInv = 4
+ *
+ * - InvGrid:
+ *
+ *       ┌ Short Sword
+ *       |
+ * [ 0][-2][ 0][ 0][ 0][ 0][ 0][ 0][-3][-3] ─ Cap
+ * [ 0][-2][ 0][ 0][ 0][ 0][ 0][ 0][-3][ 3]
+ * [ 0][ 2][ 0][ 0][ 0][ 0][ 0][ 0][ 0][ 0]
+ * [ 3][ 0][ 1][ 0][ 0][ 0][ 0][ 0][ 0][ 0]
+ *   |       |
+ *   |       └ Potion of Healing
+ *   └ Gold
+ *
+ *
+ * After:
+ * - InvList[0] = Potion of Healing
+ * - InvList[1] = Gold
+ * - InvList[2] = Cap
+ * - _pNumInv = 3
+ *
+ * - InvGrid:
+ *
+ * [ 0][ 0][ 0][ 0][ 0][ 0][ 0][ 0][-3][-3] ─ Cap
+ * [ 0][ 0][ 0][ 0][ 0][ 0][ 0][ 0][-3][ 3]
+ * [ 0][ 0][ 0][ 0][ 0][ 0][ 0][ 0][ 0][ 0]
+ * [ 2][ 0][ 1][ 0][ 0][ 0][ 0][ 0][ 0][ 0]
+ *   |       |
+ *   |       └ Potion of Healing
+ *   └ Gold
+ *
+ * Note that InvList behaves like a linked list that does not respect ordering: when the list has elements in the middle
+ * removed, the last elements are moved into their place.
+ *
+ * @param pnum The number of the player whose inventory should have the item removed from.
+ * @param iv The InvList-based index of the item to be removed.
+ */
 void RemoveInvItem(int pnum, int iv)
 {
 	int i, j;
