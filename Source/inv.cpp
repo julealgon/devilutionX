@@ -1474,28 +1474,7 @@ void CheckInvCut(int pnum, int mx, int my, BOOL automaticMove)
 			}
 
 			if (!automaticMove || automaticallyMoved) {
-				for (i = 0; i < NUM_INV_GRID_ELEM; i++) {
-					if (player.InvGrid[i] == iv || player.InvGrid[i] == -iv) {
-						player.InvGrid[i] = 0;
-					}
-				}
-
-				iv--;
-
-				player._pNumInv--;
-
-				if (player._pNumInv > 0 && player._pNumInv != iv) {
-					player.InvList[iv] = player.InvList[player._pNumInv];
-
-					for (j = 0; j < NUM_INV_GRID_ELEM; j++) {
-						if (player.InvGrid[j] == player._pNumInv + 1) {
-							player.InvGrid[j] = iv + 1;
-						}
-						if (player.InvGrid[j] == -(player._pNumInv + 1)) {
-							player.InvGrid[j] = -iv - 1;
-						}
-					}
-				}
+				RemoveInvItem(pnum, iv - 1, false);
 			}
 		}
 	}
@@ -1641,8 +1620,9 @@ void inv_update_rem_item(int pnum, BYTE iv)
  *
  * @param pnum The number of the player whose inventory should have the item removed from.
  * @param iv The InvList-based index of the item to be removed.
+ * @param recalculateRemovalEffects A value indicating whether player recalculation should occur after the item is removed.
  */
-void RemoveInvItem(int pnum, int iv)
+void RemoveInvItem(int pnum, int iv, bool recalculateRemovalEffects)
 {
 	int i, j;
 
@@ -1670,7 +1650,9 @@ void RemoveInvItem(int pnum, int iv)
 		}
 	}
 
-	CalcPlrScrolls(pnum);
+	if (recalculateRemovalEffects) {
+		CalcPlrScrolls(pnum);
+	}
 }
 
 void RemoveSpdBarItem(int pnum, int iv)
