@@ -540,7 +540,8 @@ BOOL CanEquip(int playerNumber, const ItemStruct &item, int bodyLocation)
 
 /**
  * @brief Automatically attempts to equip the specified item in a specific location in the player's body.
- * @note On success, this will broadcast an equipment_change event to let other players know about the equipment change.
+ * @note On success, this will broadcast an equipment_change event to let other players know about the equipment change and
+ * play the 'equip' sound for the item.
  * @param playerNumber The player number whose inventory will be checked for compatibility with the item.
  * @param item The item to equip.
  * @param bodyLocation The location in the inventory where the item should be equipped. Can be one of 'inv_body_loc' members.
@@ -556,6 +557,9 @@ BOOL AutoEquip(int playerNumber, const ItemStruct &item, int bodyLocation)
 
 	NetSendCmdChItem(FALSE, item, bodyLocation);
 	CalcPlrInv(playerNumber, TRUE);
+	if (playerNumber == myplr) {
+		PlaySFX(ItemInvSnds[ItemCAnimTbl[item._iCurs]]);
+	}
 
 	return TRUE;
 }
@@ -615,6 +619,10 @@ BOOL AutoPlaceItemInBelt(int playerNumber, const ItemStruct &item, BOOL persistI
 			if (persistItem) {
 				plr[playerNumber].SpdList[i] = item;
 				CalcPlrScrolls(playerNumber);
+				if (playerNumber == myplr) {
+					PlaySFX(IS_IGRAB);
+				}
+
 				drawsbarflag = TRUE;
 			}
 
@@ -694,6 +702,10 @@ BOOL AutoPlaceItemInInventory(int playerNumber, const ItemStruct &item, BOOL per
 		for (int i = 10; i < 19 && !done; i++) {
 			done = AutoPlace(playerNumber, i, itemSize.X, itemSize.Y, persistItem);
 		}
+	}
+
+	if (persistItem && done && playerNumber == myplr) {
+		PlaySFX(IS_IGRAB);
 	}
 
 	return done;
@@ -1353,7 +1365,6 @@ void CheckInvCut(int pnum, int mx, int my, BOOL automaticMove)
 	holdItem._itype = ITYPE_NONE;
 
 	BOOL automaticallyMoved = FALSE;
-	BOOL automaticallyEquipped = FALSE;
 	BOOL automaticallyUnequip = FALSE;
 
 	ItemStruct &headItem = player.InvBody[INVLOC_HEAD];
@@ -1361,7 +1372,7 @@ void CheckInvCut(int pnum, int mx, int my, BOOL automaticMove)
 		holdItem = headItem;
 		if (automaticMove) {
 			automaticallyUnequip = TRUE;
-			automaticallyMoved = automaticallyEquipped = AutoPlaceItemInInventory(pnum, headItem, TRUE);
+			automaticallyMoved = AutoPlaceItemInInventory(pnum, headItem, TRUE);
 		}
 
 		if (!automaticMove || automaticallyMoved) {
@@ -1375,7 +1386,7 @@ void CheckInvCut(int pnum, int mx, int my, BOOL automaticMove)
 		holdItem = leftRingItem;
 		if (automaticMove) {
 			automaticallyUnequip = TRUE;
-			automaticallyMoved = automaticallyEquipped = AutoPlaceItemInInventory(pnum, leftRingItem, TRUE);
+			automaticallyMoved = AutoPlaceItemInInventory(pnum, leftRingItem, TRUE);
 		}
 
 		if (!automaticMove || automaticallyMoved) {
@@ -1389,7 +1400,7 @@ void CheckInvCut(int pnum, int mx, int my, BOOL automaticMove)
 		holdItem = rightRingItem;
 		if (automaticMove) {
 			automaticallyUnequip = TRUE;
-			automaticallyMoved = automaticallyEquipped = AutoPlaceItemInInventory(pnum, rightRingItem, TRUE);
+			automaticallyMoved = AutoPlaceItemInInventory(pnum, rightRingItem, TRUE);
 		}
 
 		if (!automaticMove || automaticallyMoved) {
@@ -1403,7 +1414,7 @@ void CheckInvCut(int pnum, int mx, int my, BOOL automaticMove)
 		holdItem = amuletItem;
 		if (automaticMove) {
 			automaticallyUnequip = TRUE;
-			automaticallyMoved = automaticallyEquipped = AutoPlaceItemInInventory(pnum, amuletItem, TRUE);
+			automaticallyMoved = AutoPlaceItemInInventory(pnum, amuletItem, TRUE);
 		}
 
 		if (!automaticMove || automaticallyMoved) {
@@ -1417,7 +1428,7 @@ void CheckInvCut(int pnum, int mx, int my, BOOL automaticMove)
 		holdItem = leftHandItem;
 		if (automaticMove) {
 			automaticallyUnequip = TRUE;
-			automaticallyMoved = automaticallyEquipped = AutoPlaceItemInInventory(pnum, leftHandItem, TRUE);
+			automaticallyMoved = AutoPlaceItemInInventory(pnum, leftHandItem, TRUE);
 		}
 
 		if (!automaticMove || automaticallyMoved) {
@@ -1431,7 +1442,7 @@ void CheckInvCut(int pnum, int mx, int my, BOOL automaticMove)
 		holdItem = rightHandItem;
 		if (automaticMove) {
 			automaticallyUnequip = TRUE;
-			automaticallyMoved = automaticallyEquipped = AutoPlaceItemInInventory(pnum, rightHandItem, TRUE);
+			automaticallyMoved = AutoPlaceItemInInventory(pnum, rightHandItem, TRUE);
 		}
 
 		if (!automaticMove || automaticallyMoved) {
@@ -1445,7 +1456,7 @@ void CheckInvCut(int pnum, int mx, int my, BOOL automaticMove)
 		holdItem = chestItem;
 		if (automaticMove) {
 			automaticallyUnequip = TRUE;
-			automaticallyMoved = automaticallyEquipped = AutoPlaceItemInInventory(pnum, chestItem, TRUE);
+			automaticallyMoved = AutoPlaceItemInInventory(pnum, chestItem, TRUE);
 		}
 
 		if (!automaticMove || automaticallyMoved) {
@@ -1466,11 +1477,7 @@ void CheckInvCut(int pnum, int mx, int my, BOOL automaticMove)
 			ItemStruct &inventoryItem = player.InvList[iv - 1];
 			holdItem = inventoryItem;
 			if (automaticMove) {
-				if (CanBePlacedOnBelt(inventoryItem)) {
-					automaticallyMoved = AutoPlaceItemInBelt(pnum, inventoryItem, TRUE);
-				} else {
-					automaticallyMoved = automaticallyEquipped = AutoEquip(pnum, inventoryItem);
-				}
+				automaticallyMoved = AutoPlaceItemInBelt(pnum, inventoryItem, TRUE) || AutoEquip(pnum, inventoryItem);
 			}
 
 			if (!automaticMove || automaticallyMoved) {
@@ -1503,14 +1510,6 @@ void CheckInvCut(int pnum, int mx, int my, BOOL automaticMove)
 		CheckItemStats(pnum);
 
 		if (pnum == myplr) {
-			if (automaticallyEquipped) {
-				PlaySFX(ItemInvSnds[ItemCAnimTbl[holdItem._iCurs]]);
-			} else {
-				if (!automaticMove || automaticallyMoved) {
-					PlaySFX(IS_IGRAB);
-				}
-			}
-
 			if (automaticMove) {
 				if (!automaticallyMoved) {
 					if (CanBePlacedOnBelt(holdItem) || automaticallyUnequip) {
@@ -1538,6 +1537,7 @@ void CheckInvCut(int pnum, int mx, int my, BOOL automaticMove)
 
 				holdItem._itype = ITYPE_NONE;
 			} else {
+				PlaySFX(IS_IGRAB);
 				SetCursor_(holdItem._iCurs + CURSOR_FIRSTITEM);
 				SetCursorPos(mx - (cursW >> 1), MouseY - (cursH >> 1));
 			}
