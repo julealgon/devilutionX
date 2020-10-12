@@ -2847,6 +2847,42 @@ typedef enum inv_item {
 	NUM_INVELEM
 } inv_item;
 
+/**
+ * @brief Potential places where an item can be located
+*/
+enum class ItemLocation {
+
+	/**
+	 * @brief Used to represent nonexitent items.
+	*/
+	NONE,
+
+	/**
+	 * @brief Indicates the item is currently equipped (in a player's body).
+	*/
+	BODY,
+
+	/**
+	 * @brief Indicates the item is currently in a player's inventory.
+	*/
+	INVENTORY,
+
+	/**
+	 * @brief Indicates the item is currently in a player's belt.
+	*/
+	BELT,
+
+	/**
+	 * @brief Indicates the item is currently in a player's cursor (his 'HoldItem').
+	*/
+	CURSOR,
+
+	/**
+	 * @brief Indicates the item is somewhere on the ground.
+	*/
+	GROUND,
+};
+
 // identifiers for each of the inventory squares
 // see https://github.com/sanctuary/graphics/blob/master/inventory.png
 typedef enum inv_xy_slot {

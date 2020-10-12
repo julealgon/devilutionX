@@ -173,6 +173,32 @@ typedef struct ItemStruct {
 	int offs016C; // _oldlight or _iInvalid
 } ItemStruct;
 
+typedef struct Point {
+	int X;
+	int Y;
+} Point;
+
+/**
+ * @brief A container struct for items and their current locations.
+*/
+typedef struct ItemReference {
+	/**
+	 * @brief The location where the item is currently in.
+	*/
+	ItemLocation location;
+
+	/**
+	 * @brief An index value that can be used to locate the item in the current location
+	 * @note Will be one of 'INVLOC_' values for location 'IL_BODY', 0-7 for 'IL_BELT', 0-39 for 'IL_INVENTORY' and unused otherwise.
+	*/
+	int locationIndex;
+
+	/**
+	 * @brief A pointer to the actual item. This will be NULL if item location is 'IL_NONE'.
+	*/
+	ItemStruct *item;
+};
+
 //////////////////////////////////////////////////
 // player
 //////////////////////////////////////////////////

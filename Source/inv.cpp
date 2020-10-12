@@ -879,6 +879,97 @@ int SwapItem(ItemStruct *a, ItemStruct *b)
 	return h._iCurs + CURSOR_FIRSTITEM;
 }
 
+/**
+ * @brief Gets the slot index corresponding to the slot under the specified screen coordinates, as defined in 'InvRect'.
+ * @param screenCoordinates a point representing the coordinates in screen space whose positions should be checked.
+ * @return A value from 0 to 'NUM_XY_SLOTS-1' corresponding to the slot in the player's inventory/body/belt, or -1 if there are no slots
+ * below the requested coordinate.
+*/
+int GetPlayerSlotIndex(Point screenCoordinates)
+{
+	Point origin = Point { RIGHT_PANEL, 0 };
+
+	for (int slotIndex = 0; slotIndex < NUM_XY_SLOTS; slotIndex++) {
+
+		if (slotIndex >= SLOTXY_BELT_FIRST) {
+			origin.X = PANEL_LEFT;
+			origin.Y = PANEL_TOP;
+		}
+
+		// check which inventory rectangle the mouse is in, if any
+		if (screenCoordinates.X >= InvRect[slotIndex].X + origin.X
+		    && screenCoordinates.X < InvRect[slotIndex].X + origin.X + (INV_SLOT_SIZE_PX + 1)
+		    && screenCoordinates.Y >= InvRect[slotIndex].Y + origin.Y - (INV_SLOT_SIZE_PX + 1)
+		    && screenCoordinates.Y < InvRect[slotIndex].Y + origin.Y) {
+			return slotIndex;
+		}
+	}
+
+	return -1;
+}
+
+/**
+ * @brief Gets the player item below the specified screen coordinates.
+ * @note The item is not removed from it's current position.
+ * @param player the player whose inventory/belt/body items will be checked.
+ * @param screenCoordinates a point representing the coordinates in screen space whose positions should be checked.
+ * @return An 'ItemReference' instance containing the item, its position in the player (body, belt, etc) and the index into
+ * the position (belt index, inventory grid position, etc).
+ * If the provided coordinates do not point to any item slot, or the slot points to a valid slot, but there are no items
+ * currently there, the 'ItemStruct' reference will be set to NULL
+ * If the provided coordinates do not point to any item slot, the location will be set to 'NONE'.
+*/
+ItemReference GetItemAtCoordinates(const PlayerStruct &player, const Point &screenCoordinates)
+{
+	int slotIndex = GetPlayerSlotIndex(screenCoordinates);
+
+	// not on an inventory slot rectangle
+	if (slotIndex == -1) {
+		return ItemReference { ItemLocation::NONE, 0, NULL };
+	}
+
+	if (slotIndex >= SLOTXY_HEAD_FIRST && slotIndex <= SLOTXY_HEAD_LAST) {
+		return ItemReference { ItemLocation::BODY, INVLOC_HEAD, (ItemStruct *)&player.InvBody[INVLOC_HEAD] };
+	}
+
+	if (slotIndex == SLOTXY_RING_LEFT) {
+		return ItemReference { ItemLocation::BODY, INVLOC_RING_LEFT, (ItemStruct *)&player.InvBody[INVLOC_RING_LEFT] };
+	}
+
+	if (slotIndex == SLOTXY_RING_RIGHT) {
+		return ItemReference { ItemLocation::BODY, INVLOC_RING_RIGHT, (ItemStruct *)&player.InvBody[INVLOC_RING_RIGHT] };
+	}
+
+	if (slotIndex == SLOTXY_AMULET) {
+		return ItemReference { ItemLocation::BODY, INVLOC_AMULET, (ItemStruct *)&player.InvBody[INVLOC_AMULET] };
+	}
+
+	if (slotIndex >= SLOTXY_HAND_LEFT_FIRST && slotIndex <= SLOTXY_HAND_LEFT_LAST) {
+		return ItemReference { ItemLocation::BODY, INVLOC_HAND_LEFT, (ItemStruct *)&player.InvBody[INVLOC_HAND_LEFT] };
+	}
+
+	if (slotIndex >= SLOTXY_HAND_RIGHT_FIRST && slotIndex <= SLOTXY_HAND_RIGHT_LAST) {
+		return ItemReference { ItemLocation::BODY, INVLOC_HAND_RIGHT, (ItemStruct *)&player.InvBody[INVLOC_HAND_RIGHT] };
+	}
+
+	if (slotIndex >= SLOTXY_CHEST_FIRST && slotIndex <= SLOTXY_CHEST_LAST) {
+		return ItemReference { ItemLocation::BODY, INVLOC_CHEST, (ItemStruct *)&player.InvBody[INVLOC_CHEST] };
+	}
+
+	if (slotIndex >= SLOTXY_INV_FIRST && slotIndex <= SLOTXY_INV_LAST) {
+		int gridIndex = slotIndex - SLOTXY_INV_FIRST;
+		int itemIndex = abs(player.InvGrid[gridIndex]);
+
+		return ItemReference { ItemLocation::INVENTORY, gridIndex, itemIndex == 0 ? NULL : (ItemStruct *)&player.InvList[itemIndex - 1] };
+	}
+
+	if (slotIndex >= SLOTXY_BELT_FIRST) {
+		int beltIndex = slotIndex - SLOTXY_BELT_FIRST;
+
+		return ItemReference { ItemLocation::BELT, beltIndex, (ItemStruct *)&player.SpdList[beltIndex] };
+	}
+}
+
 void CheckInvPaste(int pnum, int mx, int my)
 {
 	int r, sx, sy;
@@ -1321,10 +1412,6 @@ void CheckInvSwap(int pnum, BYTE bLoc, int idx, WORD wCI, int seed, BOOL bId)
 
 void CheckInvCut(int pnum, int mx, int my, BOOL automaticMove)
 {
-	int r;
-	BOOL done;
-	char ii;
-	int iv, i, j, offs, ig;
 	PlayerStruct &player = plr[pnum];
 
 	if (player._pmode > PM_WALK3) {
@@ -1336,211 +1423,93 @@ void CheckInvCut(int pnum, int mx, int my, BOOL automaticMove)
 		dropGoldValue = 0;
 	}
 
-	done = FALSE;
-
-	for (r = 0; (DWORD)r < NUM_XY_SLOTS && !done; r++) {
-		int xo = RIGHT_PANEL;
-		int yo = 0;
-		if (r >= SLOTXY_BELT_FIRST) {
-			xo = PANEL_LEFT;
-			yo = PANEL_TOP;
-		}
-
-		// check which inventory rectangle the mouse is in, if any
-		if (mx >= InvRect[r].X + xo
-		    && mx < InvRect[r].X + xo + (INV_SLOT_SIZE_PX + 1)
-		    && my >= InvRect[r].Y + yo - (INV_SLOT_SIZE_PX + 1)
-		    && my < InvRect[r].Y + yo) {
-			done = TRUE;
-			r--;
-		}
-	}
-
-	if (!done) {
-		// not on an inventory slot rectangle
+	ItemReference itemReference = GetItemAtCoordinates(player, Point { mx, my });
+	if (itemReference.item == NULL || IsEmpty(*itemReference.item)) {
 		return;
 	}
 
 	ItemStruct &holdItem = player.HoldItem;
-	holdItem._itype = ITYPE_NONE;
+	holdItem = *itemReference.item;
 
 	BOOL automaticallyMoved = FALSE;
 	BOOL automaticallyUnequip = FALSE;
 
-	ItemStruct &headItem = player.InvBody[INVLOC_HEAD];
-	if (r >= SLOTXY_HEAD_FIRST && r <= SLOTXY_HEAD_LAST && headItem._itype != ITYPE_NONE) {
-		holdItem = headItem;
+	switch (itemReference.location) {
+	case ItemLocation::BODY:
 		if (automaticMove) {
 			automaticallyUnequip = TRUE;
-			automaticallyMoved = AutoPlaceItemInInventory(pnum, headItem, TRUE);
+			automaticallyMoved = AutoPlaceItemInInventory(pnum, *itemReference.item, TRUE);
 		}
 
 		if (!automaticMove || automaticallyMoved) {
-			NetSendCmdDelItem(FALSE, INVLOC_HEAD);
-			headItem._itype = ITYPE_NONE;
+			NetSendCmdDelItem(FALSE, itemReference.locationIndex);
+			itemReference.item->_itype = ITYPE_NONE;
 		}
-	}
 
-	ItemStruct &leftRingItem = player.InvBody[INVLOC_RING_LEFT];
-	if (r == SLOTXY_RING_LEFT && leftRingItem._itype != ITYPE_NONE) {
-		holdItem = leftRingItem;
+		break;
+
+	case ItemLocation::INVENTORY:
 		if (automaticMove) {
-			automaticallyUnequip = TRUE;
-			automaticallyMoved = AutoPlaceItemInInventory(pnum, leftRingItem, TRUE);
+			automaticallyMoved = AutoPlaceItemInBelt(pnum, *itemReference.item, TRUE) || AutoEquip(pnum, *itemReference.item);
 		}
 
 		if (!automaticMove || automaticallyMoved) {
-			NetSendCmdDelItem(FALSE, INVLOC_RING_LEFT);
-			leftRingItem._itype = ITYPE_NONE;
-		}
-	}
-
-	ItemStruct &rightRingItem = player.InvBody[INVLOC_RING_RIGHT];
-	if (r == SLOTXY_RING_RIGHT && rightRingItem._itype != ITYPE_NONE) {
-		holdItem = rightRingItem;
-		if (automaticMove) {
-			automaticallyUnequip = TRUE;
-			automaticallyMoved = AutoPlaceItemInInventory(pnum, rightRingItem, TRUE);
-		}
-
-		if (!automaticMove || automaticallyMoved) {
-			NetSendCmdDelItem(FALSE, INVLOC_RING_RIGHT);
-			rightRingItem._itype = ITYPE_NONE;
-		}
-	}
-
-	ItemStruct &amuletItem = player.InvBody[INVLOC_AMULET];
-	if (r == SLOTXY_AMULET && amuletItem._itype != ITYPE_NONE) {
-		holdItem = amuletItem;
-		if (automaticMove) {
-			automaticallyUnequip = TRUE;
-			automaticallyMoved = AutoPlaceItemInInventory(pnum, amuletItem, TRUE);
-		}
-
-		if (!automaticMove || automaticallyMoved) {
-			NetSendCmdDelItem(FALSE, INVLOC_AMULET);
-			amuletItem._itype = ITYPE_NONE;
-		}
-	}
-
-	ItemStruct &leftHandItem = player.InvBody[INVLOC_HAND_LEFT];
-	if (r >= SLOTXY_HAND_LEFT_FIRST && r <= SLOTXY_HAND_LEFT_LAST && leftHandItem._itype != ITYPE_NONE) {
-		holdItem = leftHandItem;
-		if (automaticMove) {
-			automaticallyUnequip = TRUE;
-			automaticallyMoved = AutoPlaceItemInInventory(pnum, leftHandItem, TRUE);
-		}
-
-		if (!automaticMove || automaticallyMoved) {
-			NetSendCmdDelItem(FALSE, INVLOC_HAND_LEFT);
-			leftHandItem._itype = ITYPE_NONE;
-		}
-	}
-
-	ItemStruct &rightHandItem = player.InvBody[INVLOC_HAND_RIGHT];
-	if (r >= SLOTXY_HAND_RIGHT_FIRST && r <= SLOTXY_HAND_RIGHT_LAST && rightHandItem._itype != ITYPE_NONE) {
-		holdItem = rightHandItem;
-		if (automaticMove) {
-			automaticallyUnequip = TRUE;
-			automaticallyMoved = AutoPlaceItemInInventory(pnum, rightHandItem, TRUE);
-		}
-
-		if (!automaticMove || automaticallyMoved) {
-			NetSendCmdDelItem(FALSE, INVLOC_HAND_RIGHT);
-			rightHandItem._itype = ITYPE_NONE;
-		}
-	}
-
-	ItemStruct &chestItem = player.InvBody[INVLOC_CHEST];
-	if (r >= SLOTXY_CHEST_FIRST && r <= SLOTXY_CHEST_LAST && chestItem._itype != ITYPE_NONE) {
-		holdItem = chestItem;
-		if (automaticMove) {
-			automaticallyUnequip = TRUE;
-			automaticallyMoved = AutoPlaceItemInInventory(pnum, chestItem, TRUE);
-		}
-
-		if (!automaticMove || automaticallyMoved) {
-			NetSendCmdDelItem(FALSE, INVLOC_CHEST);
-			chestItem._itype = ITYPE_NONE;
-		}
-	}
-
-	if (r >= SLOTXY_INV_FIRST && r <= SLOTXY_INV_LAST) {
-		ig = r - SLOTXY_INV_FIRST;
-		ii = player.InvGrid[ig];
-		if (ii != 0) {
-			iv = ii;
-			if (ii <= 0) {
-				iv = -ii;
+			if (itemReference.item->_itype == ITYPE_GOLD) {
+				player._pGold = CalculateGold(pnum);
 			}
 
-			ItemStruct &inventoryItem = player.InvList[iv - 1];
-			holdItem = inventoryItem;
-			if (automaticMove) {
-				automaticallyMoved = AutoPlaceItemInBelt(pnum, inventoryItem, TRUE) || AutoEquip(pnum, inventoryItem);
-			}
-
-			if (!automaticMove || automaticallyMoved) {
-				RemoveInvItem(pnum, iv - 1, false);
-			}
+			RemoveInvItem(pnum, abs(player.InvGrid[itemReference.locationIndex]) - 1, false);
 		}
+
+		break;
+
+	case ItemLocation::BELT:
+		if (automaticMove) {
+			automaticallyMoved = AutoPlaceItemInInventory(pnum, *itemReference.item, TRUE);
+		}
+
+		if (!automaticMove || automaticallyMoved) {
+			itemReference.item->_itype = ITYPE_NONE;
+			drawsbarflag = TRUE;
+		}
+
+		break;
 	}
 
-	if (r >= SLOTXY_BELT_FIRST) {
-		ItemStruct &beltItem = player.SpdList[r - SLOTXY_BELT_FIRST];
-		if (beltItem._itype != ITYPE_NONE) {
-			holdItem = beltItem;
-			if (automaticMove) {
-				automaticallyMoved = AutoPlaceItemInInventory(pnum, beltItem, TRUE);
-			}
+	CalcPlrInv(pnum, TRUE);
+	CheckItemStats(pnum);
 
-			if (!automaticMove || automaticallyMoved) {
-				beltItem._itype = ITYPE_NONE;
-				drawsbarflag = TRUE;
-			}
-		}
-	}
-
-	if (holdItem._itype != ITYPE_NONE) {
-		if (holdItem._itype == ITYPE_GOLD) {
-			player._pGold = CalculateGold(pnum);
-		}
-
-		CalcPlrInv(pnum, TRUE);
-		CheckItemStats(pnum);
-
-		if (pnum == myplr) {
-			if (automaticMove) {
-				if (!automaticallyMoved) {
-					if (CanBePlacedOnBelt(holdItem) || automaticallyUnequip) {
-						if (player._pClass == PC_WARRIOR) {
-							PlaySFX(PS_WARR15, FALSE);
+	if (pnum == myplr) {
+		if (automaticMove) {
+			if (!automaticallyMoved) {
+				if (CanBePlacedOnBelt(*itemReference.item) || automaticallyUnequip) {
+					if (player._pClass == PC_WARRIOR) {
+						PlaySFX(PS_WARR15, FALSE);
 #ifndef SPAWN
-						} else if (player._pClass == PC_ROGUE) {
-							PlaySFX(PS_ROGUE15, FALSE);
-						} else if (player._pClass == PC_SORCERER) {
-							PlaySFX(PS_MAGE15, FALSE);
+					} else if (player._pClass == PC_ROGUE) {
+						PlaySFX(PS_ROGUE15, FALSE);
+					} else if (player._pClass == PC_SORCERER) {
+						PlaySFX(PS_MAGE15, FALSE);
 #endif
-						}
-					} else {
-						if (player._pClass == PC_WARRIOR) {
-							PlaySFX(PS_WARR37, FALSE);
+					}
+				} else {
+					if (player._pClass == PC_WARRIOR) {
+						PlaySFX(PS_WARR37, FALSE);
 #ifndef SPAWN
-						} else if (player._pClass == PC_ROGUE) {
-							PlaySFX(PS_ROGUE37, FALSE);
-						} else if (player._pClass == PC_SORCERER) {
-							PlaySFX(PS_MAGE37, FALSE);
+					} else if (player._pClass == PC_ROGUE) {
+						PlaySFX(PS_ROGUE37, FALSE);
+					} else if (player._pClass == PC_SORCERER) {
+						PlaySFX(PS_MAGE37, FALSE);
 #endif
-						}
 					}
 				}
-
-				holdItem._itype = ITYPE_NONE;
-			} else {
-				PlaySFX(IS_IGRAB);
-				SetCursor_(holdItem._iCurs + CURSOR_FIRSTITEM);
-				SetCursorPos(mx - (cursW >> 1), MouseY - (cursH >> 1));
 			}
+
+			holdItem._itype = ITYPE_NONE;
+		} else {
+			PlaySFX(IS_IGRAB);
+			SetCursor_(holdItem._iCurs + CURSOR_FIRSTITEM);
+			SetCursorPos(mx - (cursW >> 1), MouseY - (cursH >> 1));
 		}
 	}
 }
