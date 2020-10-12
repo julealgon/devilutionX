@@ -638,6 +638,10 @@ BOOL AutoPlaceItemInInventory(int playerNumber, const ItemStruct &item, BOOL per
 	InvXY itemSize = GetInventorySize(item);
 	BOOL done = FALSE;
 
+	if (item._itype == ITYPE_GOLD) {
+		done = GoldAutoPlace(playerNumber);
+	}
+
 	if (itemSize.X == 1 && itemSize.Y == 1) {
 		for (int i = 30; i <= 39 && !done; i++) {
 			done = AutoPlace(playerNumber, i, itemSize.X, itemSize.Y, persistItem);
@@ -1821,18 +1825,8 @@ void AutoGetItem(int pnum, int ii)
 	CheckBookLevel(pnum);
 	CheckItemStats(pnum);
 	SetICursor(plr[pnum].HoldItem._iCurs + CURSOR_FIRSTITEM);
-	if (plr[pnum].HoldItem._itype == ITYPE_GOLD) {
-		done = GoldAutoPlace(pnum);
-	} else {
-		done = AutoEquip(pnum, plr[pnum].HoldItem);
-		if (!done) {
-			done = AutoPlaceItemInBelt(pnum, plr[pnum].HoldItem, TRUE);
-		}
-		if (!done) {
-			done = AutoPlaceItemInInventory(pnum, plr[pnum].HoldItem, TRUE);
-		}
-	}
-	if (done) {
+
+	if (AutoEquip(pnum, plr[pnum].HoldItem) || AutoPlaceItemInBelt(pnum, plr[pnum].HoldItem, TRUE) || AutoPlaceItemInInventory(pnum, plr[pnum].HoldItem, TRUE)) {
 		dItem[item[ii]._ix][item[ii]._iy] = 0;
 		i = 0;
 		while (i < numitems) {
