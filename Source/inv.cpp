@@ -543,22 +543,22 @@ BOOL CanEquip(int playerNumber, const ItemStruct &item, int bodyLocation)
  * @note On success, this will broadcast an equipment_change event to let other players know about the equipment change and
  * play the 'equip' sound for the item.
  * @param playerNumber The player number whose inventory will be checked for compatibility with the item.
- * @param item The item to equip.
+ * @param itemReference The itemReference containing the item to equip.
  * @param bodyLocation The location in the inventory where the item should be equipped. Can be one of 'inv_body_loc' members.
  * @return 'TRUE' if the item was equipped and 'FALSE' otherwise.
  */
-BOOL AutoEquip(int playerNumber, const ItemStruct &item, int bodyLocation)
+BOOL AutoEquip(int playerNumber, const ItemReference &itemReference, int bodyLocation)
 {
-	if (!CanEquip(playerNumber, item, bodyLocation)) {
+	if (!CanEquip(playerNumber, *itemReference.item, bodyLocation)) {
 		return FALSE;
 	}
 
-	plr[playerNumber].InvBody[bodyLocation] = item;
+	plr[playerNumber].InvBody[bodyLocation] = *itemReference.item;
 
-	NetSendCmdChItem(FALSE, item, bodyLocation);
+	NetSendCmdChItem(FALSE, *itemReference.item, bodyLocation);
 	CalcPlrInv(playerNumber, TRUE);
 	if (playerNumber == myplr) {
-		PlaySFX(ItemInvSnds[ItemCAnimTbl[item._iCurs]]);
+		PlaySFX(ItemInvSnds[ItemCAnimTbl[itemReference.item->_iCurs]]);
 	}
 
 	return TRUE;
@@ -568,17 +568,17 @@ BOOL AutoEquip(int playerNumber, const ItemStruct &item, int bodyLocation)
  * @brief Automatically attempts to equip the specified item in the most appropriate location in the player's body.
  * @note On success, this will broadcast an equipment_change event to let other players know about the equipment change.
  * @param playerNumber The player number whose inventory will be checked for compatibility with the item.
- * @param item The item to equip.
+ * @param itemReference The itemReference containing the item to equip.
  * @return 'TRUE' if the item was equipped and 'FALSE' otherwise.
  */
-BOOL AutoEquip(int playerNumber, const ItemStruct &item)
+BOOL AutoEquip(int playerNumber, const ItemReference &itemReference)
 {
-	if (!CanEquip(item)) {
+	if (!CanEquip(*itemReference.item)) {
 		return FALSE;
 	}
 
 	for (int bodyLocation = INVLOC_HEAD; bodyLocation < NUM_INVLOC; bodyLocation++) {
-		if (AutoEquip(playerNumber, item, bodyLocation)) {
+		if (AutoEquip(playerNumber, itemReference, bodyLocation)) {
 			return TRUE;
 		}
 	}
@@ -1454,7 +1454,7 @@ void CheckInvCut(int pnum, int mx, int my, BOOL automaticMove)
 
 	case ItemLocation::INVENTORY:
 		if (automaticMove) {
-			automaticallyMoved = AutoPlaceItemInBelt(pnum, *itemReference.item, TRUE) || AutoEquip(pnum, *itemReference.item);
+			automaticallyMoved = AutoPlaceItemInBelt(pnum, *itemReference.item, TRUE) || AutoEquip(pnum, itemReference);
 		}
 
 		if (!automaticMove || automaticallyMoved) {
@@ -1826,7 +1826,7 @@ void AutoGetItem(int pnum, int ii)
 	CheckItemStats(pnum);
 	SetICursor(plr[pnum].HoldItem._iCurs + CURSOR_FIRSTITEM);
 
-	if (AutoEquip(pnum, plr[pnum].HoldItem) || AutoPlaceItemInBelt(pnum, plr[pnum].HoldItem, TRUE) || AutoPlaceItemInInventory(pnum, plr[pnum].HoldItem, TRUE)) {
+	if (AutoEquip(pnum, ItemReference { ItemLocation::GROUND, 0, &plr[pnum].HoldItem }) || AutoPlaceItemInBelt(pnum, plr[pnum].HoldItem, TRUE) || AutoPlaceItemInInventory(pnum, plr[pnum].HoldItem, TRUE)) {
 		dItem[item[ii]._ix][item[ii]._iy] = 0;
 		i = 0;
 		while (i < numitems) {
