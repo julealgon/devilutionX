@@ -6,7 +6,10 @@
 #ifndef __INV_H__
 #define __INV_H__
 
+#include <utility>
+
 DEVILUTION_BEGIN_NAMESPACE
+using namespace std;
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,6 +25,8 @@ void InvDrawSlotBack(int X, int Y, int W, int H);
 void DrawInv();
 void DrawInvBelt();
 BOOL AutoPlace(int pnum, int ii, int sx, int sy, BOOL saveflag);
+BOOL AutoPlaceItemInInventory(int playerNumber, const ItemStruct &item, BOOL persistItem = FALSE);
+BOOL AutoEquip(int playerNumber, const ItemReference &itemReference, bool allowReplacement = false);
 BOOL SpecialAutoPlace(int pnum, int ii, const ItemStruct &item);
 BOOL GoldAutoPlace(int pnum);
 int SwapItem(ItemStruct *a, ItemStruct *b);
@@ -65,6 +70,8 @@ extern int AP2x2Tbl[10];
 #ifdef __cplusplus
 }
 #endif
+
+bool AutoSwapEquipment(int playerNumber, const ItemStruct &item);
 
 DEVILUTION_END_NAMESPACE
 

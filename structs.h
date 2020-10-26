@@ -4,6 +4,8 @@
  * Various global structures.
  */
 
+#include <tuple>
+
 DEVILUTION_BEGIN_NAMESPACE
 
 //////////////////////////////////////////////////
@@ -1196,6 +1198,11 @@ typedef struct ThemeStruct {
 typedef struct InvXY {
 	int X;
 	int Y;
+
+	bool operator==(const InvXY &other) const
+	{
+		return std::tie(X, Y) == std::tie(other.X, other.Y);
+	}
 } InvXY;
 
 //////////////////////////////////////////////////

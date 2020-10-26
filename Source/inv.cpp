@@ -472,6 +472,40 @@ BOOL CanEquip(const ItemStruct &item)
 }
 
 /**
+ * @brief Checks whether the specified item is a valid candidate to be equipped in the desired body location. An item
+ * being valid for a given location is based on the item's target location (ILOC attribute) and the body location. For
+ * example, a two-handed weapon could be equipped in any of the players arms, while a ring would fit any of the ring
+ * slots. A helm however would not fit the chest slot, and an amulet would not fit in a hand slot.
+ * @param item The item to check.
+ * @param bodyLocation The location in the inventory to be checked against. Can be one of 'inv_body_loc' members.
+ * @return 'TRUE' if the item fits in the specified body location, and 'FALSE' otherwise.
+ */
+bool IsFitForBodyLocation(const ItemStruct &item, int bodyLocation)
+{
+	switch (bodyLocation) {
+	case INVLOC_AMULET:
+		return item._iLoc == ILOC_AMULET;
+
+	case INVLOC_CHEST:
+		return item._iLoc == ILOC_ARMOR;
+
+	case INVLOC_HAND_LEFT:
+	case INVLOC_HAND_RIGHT:
+		return item._iLoc == ILOC_ONEHAND || item._iLoc == ILOC_TWOHAND;
+
+	case INVLOC_HEAD:
+		return item._iLoc == ILOC_HELM;
+
+	case INVLOC_RING_LEFT:
+	case INVLOC_RING_RIGHT:
+		return item._iLoc == ILOC_RING;
+
+	default:
+		return FALSE;
+	}
+}
+
+/**
  * @brief A specialized version of 'CanEquip(int, ItemStruct&, int)' that specifically checks whether the item can be equipped
  * in one/both of the player's hands.
  * @param playerNumber The player number whose inventory will be checked for compatibility with the item.
@@ -479,12 +513,25 @@ BOOL CanEquip(const ItemStruct &item)
  * @return 'TRUE' if the player can currently equip the item in either one of his hands (i.e. the required hands are empty and
  * allow the item), and 'FALSE' otherwise.
  */
-BOOL CanWield(int playerNumber, const ItemStruct &item)
+BOOL CanWield(int playerNumber, const ItemStruct &item, int bodyLocation, bool allowReplacement = false)
 {
-	if (!CanEquip(item) || (item._iLoc != ILOC_ONEHAND && item._iLoc != ILOC_TWOHAND))
-		return FALSE;
-
 	PlayerStruct &player = plr[playerNumber];
+	if (!CanEquip(item) || player._pmode > PM_WALK3 || !IsFitForBodyLocation(item, bodyLocation)) {
+		return FALSE;
+	}
+
+	if (bodyLocation != INVLOC_HAND_LEFT && bodyLocation != INVLOC_HAND_RIGHT) {
+		return FALSE;
+	}
+
+	if (!allowReplacement && !IsEmpty(player.InvBody[bodyLocation])) {
+		return FALSE;
+	}
+
+	if (allowReplacement) {
+		return TRUE;
+	}
+
 	ItemStruct &leftHandItem = player.InvBody[INVLOC_HAND_LEFT];
 	ItemStruct &rightHandItem = player.InvBody[INVLOC_HAND_RIGHT];
 
@@ -502,6 +549,36 @@ BOOL CanWield(int playerNumber, const ItemStruct &item)
 }
 
 /**
+ * @brief Checks whether the specified item can be worn in the desired body location on the player. Weapons and shield are not
+ * considered "wearable" items.
+ * @param playerNumber The player number whose inventory will be checked for compatibility with the item.
+ * @param item The item to check.
+ * @param bodyLocation The location in the inventory to be checked against. Can be one of 'inv_body_loc' members.
+ * @return 'TRUE' if the player can currently wear the item in the specified body location (i.e. the body location is empty and
+ * allows the item), and 'FALSE' otherwise.
+ */
+bool CanWear(int playerNumber, const ItemStruct &item, int bodyLocation, bool allowReplacement = false)
+{
+	PlayerStruct &player = plr[playerNumber];
+	if (!CanEquip(item) || player._pmode > PM_WALK3)
+		return false;
+
+	switch (bodyLocation) {
+	case INVLOC_AMULET:
+	case INVLOC_CHEST:
+	case INVLOC_HEAD:
+		return (allowReplacement || IsEmpty(player.InvBody[bodyLocation])) && IsFitForBodyLocation(item, bodyLocation);
+
+	case INVLOC_RING_LEFT:
+	case INVLOC_RING_RIGHT:
+		return IsEmpty(player.InvBody[bodyLocation]) && IsFitForBodyLocation(item, bodyLocation);
+
+	default:
+		return false;
+	}
+}
+
+/**
  * @brief Checks whether the specified item can be equipped in the desired body location on the player.
  * @param playerNumber The player number whose inventory will be checked for compatibility with the item.
  * @param item The item to check.
@@ -509,33 +586,9 @@ BOOL CanWield(int playerNumber, const ItemStruct &item)
  * @return 'TRUE' if the player can currently equip the item in the specified body location (i.e. the body location is empty and
  * allows the item), and 'FALSE' otherwise.
  */
-BOOL CanEquip(int playerNumber, const ItemStruct &item, int bodyLocation)
+BOOL CanEquip(int playerNumber, const ItemStruct &item, int bodyLocation, bool allowReplacement = false)
 {
-	PlayerStruct &player = plr[playerNumber];
-	if (!CanEquip(item) || player._pmode > PM_WALK3 || !IsEmpty(player.InvBody[bodyLocation]))
-		return FALSE;
-
-	switch (bodyLocation) {
-	case INVLOC_AMULET:
-		return item._iLoc == ILOC_AMULET;
-
-	case INVLOC_CHEST:
-		return item._iLoc == ILOC_ARMOR;
-
-	case INVLOC_HAND_LEFT: 
-	case INVLOC_HAND_RIGHT:
-		return CanWield(playerNumber, item);
-
-	case INVLOC_HEAD:
-		return item._iLoc == ILOC_HELM;
-
-	case INVLOC_RING_LEFT:
-	case INVLOC_RING_RIGHT:
-		return item._iLoc == ILOC_RING;
-
-	default:
-		return FALSE;
-	}
+	return CanWield(playerNumber, item, bodyLocation, allowReplacement) || CanWear(playerNumber, item, bodyLocation, allowReplacement);
 }
 
 /**
@@ -545,20 +598,63 @@ BOOL CanEquip(int playerNumber, const ItemStruct &item, int bodyLocation)
  * @param playerNumber The player number whose inventory will be checked for compatibility with the item.
  * @param itemReference The itemReference containing the item to equip.
  * @param bodyLocation The location in the inventory where the item should be equipped. Can be one of 'inv_body_loc' members.
+ * @param allowReplacement A value indicating whether the item can replace already existing equipment. A value of 'false'
+ * will only allow equipping into empty slots.
  * @return 'TRUE' if the item was equipped and 'FALSE' otherwise.
  */
-BOOL AutoEquip(int playerNumber, const ItemReference &itemReference, int bodyLocation)
+BOOL AutoEquip(int playerNumber, const ItemReference &itemReference, int bodyLocation, bool allowReplacement = false)
 {
-	if (!CanEquip(playerNumber, *itemReference.item, bodyLocation)) {
+	if (!CanEquip(playerNumber, *itemReference.item, bodyLocation, allowReplacement)) {
 		return FALSE;
 	}
 
-	plr[playerNumber].InvBody[bodyLocation] = *itemReference.item;
+	ItemStruct &targetBodySlot = plr[playerNumber].InvBody[bodyLocation];
 
-	NetSendCmdChItem(FALSE, *itemReference.item, bodyLocation);
+	switch (bodyLocation) {
+	case INVLOC_AMULET:
+	case INVLOC_CHEST:
+	case INVLOC_HEAD:
+	case INVLOC_RING_LEFT:
+	case INVLOC_RING_RIGHT:
+		if (IsEmpty(targetBodySlot)) {
+			targetBodySlot = *itemReference.item;
+		} else {
+			SwapItem(itemReference.item, &targetBodySlot);
+		}
+
+		break;
+
+	case INVLOC_HAND_LEFT:
+	case INVLOC_HAND_RIGHT:
+		if (IsEmpty(targetBodySlot)) {
+			targetBodySlot = *itemReference.item;
+		} else {
+			if (itemReference.location == ItemLocation::INVENTORY) {
+				int itemIndex = abs(plr[playerNumber].InvGrid[itemReference.locationIndex]) - 1;
+				ItemStruct itemToRemove = plr[playerNumber].InvList[itemIndex];
+				RemoveInvItem(playerNumber, itemIndex, false);
+				if (AutoPlaceItemInInventory(playerNumber, targetBodySlot, TRUE)) {
+					int originalItemType = targetBodySlot._itype;
+					targetBodySlot._itype = ITYPE_NONE;
+					if (!AutoEquip(playerNumber, ItemReference { itemReference.location, itemReference.locationIndex, &itemToRemove }, false)) {
+						AutoPlaceItemInInventory(playerNumber, itemToRemove, TRUE);
+						targetBodySlot._itype = originalItemType;
+
+						return FALSE;
+					}
+				} else {
+					return FALSE;
+				}
+			} else {
+				return FALSE;
+			}
+		}
+	}
+
+	NetSendCmdChItem(FALSE, targetBodySlot, bodyLocation);
 	CalcPlrInv(playerNumber, TRUE);
 	if (playerNumber == myplr) {
-		PlaySFX(ItemInvSnds[ItemCAnimTbl[itemReference.item->_iCurs]]);
+		PlaySFX(ItemInvSnds[ItemCAnimTbl[targetBodySlot._iCurs]]);
 	}
 
 	return TRUE;
@@ -569,16 +665,18 @@ BOOL AutoEquip(int playerNumber, const ItemReference &itemReference, int bodyLoc
  * @note On success, this will broadcast an equipment_change event to let other players know about the equipment change.
  * @param playerNumber The player number whose inventory will be checked for compatibility with the item.
  * @param itemReference The itemReference containing the item to equip.
+ * @param allowReplacement A value indicating whether the item can replace already existing equipment. A value of 'false'
+ * will only allow equipping into empty slots.
  * @return 'TRUE' if the item was equipped and 'FALSE' otherwise.
  */
-BOOL AutoEquip(int playerNumber, const ItemReference &itemReference)
+BOOL AutoEquip(int playerNumber, const ItemReference &itemReference, bool allowReplacement)
 {
 	if (!CanEquip(*itemReference.item)) {
 		return FALSE;
 	}
 
 	for (int bodyLocation = INVLOC_HEAD; bodyLocation < NUM_INVLOC; bodyLocation++) {
-		if (AutoEquip(playerNumber, itemReference, bodyLocation)) {
+		if (AutoEquip(playerNumber, itemReference, bodyLocation, allowReplacement)) {
 			return TRUE;
 		}
 	}
@@ -633,7 +731,7 @@ BOOL AutoPlaceItemInBelt(int playerNumber, const ItemStruct &item, BOOL persistI
 	return FALSE;
 }
 
-BOOL AutoPlaceItemInInventory(int playerNumber, const ItemStruct &item, BOOL persistItem = FALSE)
+BOOL AutoPlaceItemInInventory(int playerNumber, const ItemStruct &item, BOOL persistItem)
 {
 	InvXY itemSize = GetInventorySize(item);
 	BOOL done = FALSE;
@@ -642,6 +740,7 @@ BOOL AutoPlaceItemInInventory(int playerNumber, const ItemStruct &item, BOOL per
 		done = GoldAutoPlace(playerNumber);
 	}
 
+	plr[playerNumber].HoldItem = item;
 	if (itemSize.X == 1 && itemSize.Y == 1) {
 		for (int i = 30; i <= 39 && !done; i++) {
 			done = AutoPlace(playerNumber, i, itemSize.X, itemSize.Y, persistItem);
@@ -1454,7 +1553,7 @@ void CheckInvCut(int pnum, int mx, int my, BOOL automaticMove)
 
 	case ItemLocation::INVENTORY:
 		if (automaticMove) {
-			automaticallyMoved = AutoPlaceItemInBelt(pnum, *itemReference.item, TRUE) || AutoEquip(pnum, itemReference);
+			automaticallyMoved = AutoPlaceItemInBelt(pnum, *itemReference.item, TRUE) || AutoEquip(pnum, itemReference, true);
 		}
 
 		if (!automaticMove || automaticallyMoved) {
