@@ -480,9 +480,8 @@ void AttrIncBtnSnap(AxisDirection dir)
 	}
 
 	// move cursor to our new location
-	int x = ChrBtnsRect[slot].position.x + (ChrBtnsRect[slot].size.width / 2);
-	int y = ChrBtnsRect[slot].position.y + (ChrBtnsRect[slot].size.height / 2);
-	SetCursorPos(x, y);
+	Point position = { ChrBtnsRect[slot].position.x + (ChrBtnsRect[slot].size.width / 2), ChrBtnsRect[slot].position.y + (ChrBtnsRect[slot].size.height / 2) };
+	SetCursorPos(position);
 }
 
 Point InvGetEquipSlotCoord(const inv_body_loc inv_slot)
@@ -633,7 +632,7 @@ void ResetInvCursorPosition()
 	mousePos.x += (InventorySlotSizeInPixels.width / 2);
 	mousePos.y -= (InventorySlotSizeInPixels.height / 2);
 
-	SetCursorPos(mousePos.x, mousePos.y);
+	SetCursorPos(mousePos);
 }
 
 /**
@@ -926,7 +925,7 @@ void InvMove(AxisDirection dir)
 		return; // Avoid wobeling when scalled
 	}
 
-	SetCursorPos(mousePos.x, mousePos.y);
+	SetCursorPos(mousePos);
 }
 
 /**
@@ -986,7 +985,7 @@ void HotSpellMove(AxisDirection dir)
 	}
 
 	if (newMousePosition != MousePosition) {
-		SetCursorPos(newMousePosition.x, newMousePosition.y);
+		SetCursorPos(newMousePosition);
 	}
 }
 
@@ -1286,7 +1285,7 @@ void HandleRightStickMotion()
 		static int lastMouseSetTick = 0;
 		const int now = SDL_GetTicks();
 		if (now - lastMouseSetTick > 0) {
-			SetCursorPos(x, y);
+			SetCursorPos({ x, y });
 			lastMouseSetTick = now;
 		}
 	}
