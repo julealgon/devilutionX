@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "engine/direction.hpp"
+#include "engine/size.hpp"
 #include "utils/stdcompat/abs.hpp"
 #include "utils/stdcompat/algorithm.hpp"
 
@@ -58,6 +59,13 @@ struct Point {
 		return (*this) += Point::fromDirection(direction);
 	}
 
+	constexpr Point &operator+=(const Size &size)
+	{
+		x += size.width;
+		y += size.height;
+		return *this;
+	}
+
 	constexpr Point &operator-=(const Point &other)
 	{
 		x -= other.x;
@@ -88,6 +96,12 @@ struct Point {
 	constexpr friend Point operator+(Point a, Direction direction)
 	{
 		a += direction;
+		return a;
+	}
+
+	constexpr friend Point operator+(Point a, Size size)
+	{
+		a += size;
 		return a;
 	}
 
