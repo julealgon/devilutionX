@@ -479,9 +479,7 @@ void AttrIncBtnSnap(AxisDirection dir)
 			++slot;
 	}
 
-	// move cursor to our new location
-	Point position = { ChrBtnsRect[slot].position.x + (ChrBtnsRect[slot].size.width / 2), ChrBtnsRect[slot].position.y + (ChrBtnsRect[slot].size.height / 2) };
-	SetCursorPos(position);
+	SetCursorPos(ChrBtnsRect[slot].Center());
 }
 
 Point InvGetEquipSlotCoord(const inv_body_loc inv_slot)
