@@ -73,6 +73,13 @@ struct Point {
 		return *this;
 	}
 
+	constexpr Point &operator-=(const Size &size)
+	{
+		x -= size.width;
+		y -= size.height;
+		return *this;
+	}
+
 	constexpr Point &operator*=(const float factor)
 	{
 		x *= factor;
@@ -114,6 +121,12 @@ struct Point {
 	constexpr friend Point operator-(const Point &a)
 	{
 		return { -a.x, -a.y };
+	}
+
+	constexpr friend Point operator-(Point a, Size size)
+	{
+		a -= size;
+		return a;
 	}
 
 	constexpr friend Point operator*(Point a, const float factor)
