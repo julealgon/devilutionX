@@ -72,13 +72,12 @@ void DrawXPBar(const CelOutputBuffer &out)
 
 	const auto &player = plr[myplr];
 
-	const int backX = PANEL_LEFT + PANEL_WIDTH / 2 - 155;
-	const int backY = PANEL_TOP + PANEL_HEIGHT - 11;
+	const Point back = { PANEL_LEFT + PANEL_WIDTH / 2 - 155, PANEL_TOP + PANEL_HEIGHT - 11 };
 
-	const int xPos = backX + 3;
-	const int yPos = backY + 2;
+	const int xPos = back.x + 3;
+	const int yPos = back.y + 2;
 
-	DrawArt(out, backX, backY, &xpbarArt);
+	DrawArt(out, back, &xpbarArt);
 
 	const int charLevel = player._pLevel;
 
